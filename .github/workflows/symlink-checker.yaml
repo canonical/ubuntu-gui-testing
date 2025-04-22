@@ -1,0 +1,36 @@
+---
+name: Check test suites structure
+on: push
+jobs:
+  symlink-checker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: run tests
+        run: |
+          code=0
+          cd tests/
+          dirs=$(ls)
+          for dr in $dirs; do
+            cd $dr;
+            ls *.resource
+            if [[ $? != "0" ]]; then
+              echo "No resource file under $dr!"
+              code=1
+            fi
+            subdirs=$(ls -d -- */ | grep -v common | grep -v generic)
+            for subdr in $subdirs; do
+              ls $subdr/*.robot
+              if [[ $? != "0" ]]; then
+                echo "no robot file under $subdr!"
+                code=1
+              fi
+            done
+            common_info=$(stat common)
+            if [[ $common_info != *"common -> ../../common/"* ]]; then
+              echo "something is wrong with the common symlink!"
+              code=1
+            fi
+          done
+          exit $code
