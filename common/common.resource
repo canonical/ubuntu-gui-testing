@@ -22,7 +22,14 @@ Open Terminal
 
 Run Command In Terminal
     [Arguments]    ${command}
-    PlatformHid.Type String    ${command} && echo FINISHED-HIT
+    ${ampersand}    Create List    Shift_L    7
+    ${space}    Create List    space
+    PlatformHid.Type String    ${command}
+    PlatformHid.Keys Combo    ${space}
+    PlatformHid.Keys Combo    ${ampersand}
+    PlatformHid.Keys Combo    ${ampersand}
+    PlatformHid.Keys Combo    ${space}
+    PlatformHid.Type String    echo FINISHED-HIT
     BuiltIn.Sleep    2    # hacky
     ${enter}    Create List    Return
     PlatformHid.Keys Combo    ${enter}
