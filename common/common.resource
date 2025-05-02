@@ -86,7 +86,7 @@ Install Debian Package
 Install Snap Package
     [Arguments]    ${package}
     Open Terminal
-    Run Sudo Command In Terminal    sudo snap install -y ${package}
+    Run Sudo Command In Terminal    sudo snap install ${package}
     Close Terminal
 
 Start Application
