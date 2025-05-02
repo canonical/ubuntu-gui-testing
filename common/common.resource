@@ -24,6 +24,11 @@ Run Sudo Command In Terminal
     [Arguments]    ${command}
     ${ampersand}    Create List    Shift_L    7
     ${space}    Create List    space
+    PlatformHid.Type String    clear
+    PlatformHid.Keys Combo    ${space}
+    PlatformHid.Keys Combo    ${ampersand}
+    PlatformHid.Keys Combo    ${ampersand}
+    PlatformHid.Keys Combo    ${space}
     PlatformHid.Type String    ${command}
     PlatformHid.Keys Combo    ${space}
     PlatformHid.Keys Combo    ${ampersand}
@@ -37,12 +42,18 @@ Run Sudo Command In Terminal
     PlatformHid.Type String    ubuntu
     BuiltIn.Sleep    2    # hacky
     PlatformHid.Keys Combo    ${enter}
+    BuiltIn.Sleep    1    # hacky
     PlatformVideoInput.Match Text    FINISHED-HIT    120
 
 Run Command In Terminal
     [Arguments]    ${command}
     ${ampersand}    Create List    Shift_L    7
     ${space}    Create List    space
+    PlatformHid.Type String    clear
+    PlatformHid.Keys Combo    ${space}
+    PlatformHid.Keys Combo    ${ampersand}
+    PlatformHid.Keys Combo    ${ampersand}
+    PlatformHid.Keys Combo    ${space}
     PlatformHid.Type String    ${command}
     PlatformHid.Keys Combo    ${space}
     PlatformHid.Keys Combo    ${ampersand}
