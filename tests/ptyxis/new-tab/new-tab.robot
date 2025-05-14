@@ -20,4 +20,4 @@ Open a new tab
     PlatformHid.Keys Combo  ${combo}
 
 A new tab is visible
-    PlatformVideoInput.Match  ${TEST}/tab-close-button.png  5
+    PlatformVideoInput.Match  ${PKG}/generic/tab-close-button.png  5
