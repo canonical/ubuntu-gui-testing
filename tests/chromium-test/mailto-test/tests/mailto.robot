@@ -1,11 +1,7 @@
 *** Settings ***
-Resource        ${Z}/../chromium.resource
+Resource        ${CURDIR}/../chromium.resource
 
 Test Tags       robot:exit-on-failure
-
-
-*** Variables ***
-${Z}    ${CURDIR}
 
 
 *** Test Cases ***
@@ -18,8 +14,14 @@ Install Mail Client
 Install Chromium
     Install Chromium
 
-Open Chromium Mail Link
-    Open Chromium Mail Link
+Open Chromium and Go To Test Plan website
+    Open Chromium With URL      wiki.ubuntu.com/DesktopTeam/TestPlans/Chromium
+
+Check that website was loaded
+    Wait For Text   Attachments
+
+Open Test Plan Mail Link
+    Find and Press Enter On     mailto
 
 Match Mail Client
     Match Mail Client

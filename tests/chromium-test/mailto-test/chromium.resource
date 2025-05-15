@@ -2,11 +2,7 @@
 Documentation       Shared resources for Chromium testing
 
 Resource            kvm.resource
-Resource            ${Y}/common/common.resource
-
-
-*** Variables ***
-${Y}    ${CURDIR}
+Resource            ${CURDIR}/common/common.resource
 
 
 *** Keywords ***
@@ -20,15 +16,22 @@ Install Mail Client
 Install Chromium
     Install Snap Package    chromium
 
-Open Chromium Mail Link
-    Start Application    /snap/bin/chromium wiki.ubuntu.com/DesktopTeam/TestPlans/Chromium
-    PlatformVideoInput.Match Text    Attachments
+Open Chromium With URL
+    [Arguments]     ${url}
+    Start Application    /snap/bin/chromium ${url}
 
+Wait for Text
+    [Arguments]     ${text2match}
+    PlatformVideoInput.Match Text    ${text2match}    60
+
+Find and Press Enter on
+    [Arguments]     ${filename}
     ${combo}    Create List    Control_L    f
     PlatformHid.Keys Combo    ${combo}
-    PlatformHid.Type String    mailto
+    PlatformHid.Type String   ${filename}
     ${esc}    Create List    Escape
     ${ret}    Create List    Return
+    PlatformHid.Keys Combo    ${ret}
     PlatformHid.Keys Combo    ${esc}
     PlatformHid.Keys Combo    ${ret}
 
