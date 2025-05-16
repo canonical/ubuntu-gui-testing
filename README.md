@@ -70,3 +70,9 @@ VNC_PORT=0 yarf --platform=Vnc  # for interactive console
 VNC_PORT=0 yarf --platform=Vnc /path/to/test/suite/  # for running a test suite
 ```
 
+## OVERLAY QEMU IMG
+
+```
+qemu-img create -o backing_file=ubuntu25-04.img,backing_fmt=raw -f qcow2 img1.cow
+```
+
