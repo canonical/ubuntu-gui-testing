@@ -108,14 +108,16 @@ Install Snap Package
     Run Sudo Command In Terminal    sudo snap install ${package}
     Close Terminal
 
+Run Command
+    [Arguments]    ${command}
+    PlatformHid.Keys Combo    Alt_L    F2
+    PlatformVideoInput.Match Text    Run a Command    15
+    PlatformHid.Type String    ${command}
+    PlatformHid.Keys Combo   Return
+
 Start Application
     [Arguments]    ${application}
-    ${combo}    Create List    Alt_L    F2
-    PlatformHid.Keys Combo    ${combo}
-    PlatformVideoInput.Match Text    Run a Command    15
-    PlatformHid.Type String    ${application}
-    ${ret}    Create List    Return
-    PlatformHid.Keys Combo    ${ret}
+    Run Command    ${application}
 
 Log In
     PlatformVideoInput.Match Text    Not listed    120
@@ -127,3 +129,21 @@ Log In
     PlatformHid.Keys Combo    ${ret}
     BuiltIn.Sleep    2
     PlatformVideoInput.Match    ${X}/circle-of-friends.png    60
+
+Lock Screen
+    PlatformHid.Keys Combo    Super_L    L
+    # The screen blanks out when the screen is locked. Press backspace to
+    # make the screen visible, so that we can match something on it.
+    Sleep    2
+    PlatformHid.Keys Combo    BackSpace
+    PlatformVideoInput.Match    ${CURDIR}/show-password.png
+
+Unlock Screen
+    [Arguments]    ${password}
+    Click LEFT Button On ${CURDIR}/show-password.png
+    PlatformHid.Keys Combo    Shift_L
+    PlatformHid.Keys Combo    Shift_L
+    PlatformHid.Type String    ${password}
+    Sleep    1
+    PlatformHid.Keys Combo    Return
+    PlatformVideoInput.Match    ${CURDIR}/circle-of-friends.png    60
