@@ -2,6 +2,7 @@
 Documentation       Shared resources for installer testing
 
 Resource            kvm.resource
+Library             Collections
 
 
 *** Variables ***
@@ -14,6 +15,24 @@ EzClick
     Click LEFT Button
     BuiltIn.Sleep    0.5
     Move Pointer To (100, 100)
+
+Move Pointer To Text
+    [Arguments]    ${text}
+    ${text_matches}    ${_}=    PlatformVideoInput.Match Text    ${text}
+    ${text_match}=     Collections.Get From List    ${text_matches}    0
+    ${region}=     PlatformVideoInput.Get Region From Text Match    ${text_match}
+    Evaluate
+    ...    sys.path.append('/home/adombeck/projects/yarf/yarf/rf_libraries/libraries')
+    ...    from video_input_base import Region
+    ...    isinstance(${region}, Region)
+    ${position}=   Get Center Of  ${region}
+    Move Pointer To ${position}
+
+Click On Text
+    [Arguments]    ${text}
+    Move Pointer To Text    ${text}
+    EzClick
+
 
 Open Terminal
     ${combo}    Create List    Alt_L    Control_L    t
