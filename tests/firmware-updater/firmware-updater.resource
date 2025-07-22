@@ -60,6 +60,7 @@ Update Fake Webcam
     PlatformHid.Type String    -00000-00000-00000-00000
     Move Pointer To ${Y}/generic/confirm-button.png
     EzClick
+    Handle PolKit Prompt
     PlatformVideoInput.Match Text    Recovery key does not work
 
     # Enter correct recovery key
@@ -68,3 +69,8 @@ Update Fake Webcam
     Move Pointer To ${Y}/generic/confirm-button.png
     EzClick
     PlatformVideoInput.Match    ${Y}/generic/update-done.png    60
+
+Handle PolKit Prompt
+    PlatformVideoInput.Match    ${Y}/generic/polkit-prompt.png
+    PlatformHid.Type String    ubuntu
+    PlatformHid.Keys Combo    Return
