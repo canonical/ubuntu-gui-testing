@@ -19,7 +19,6 @@ Open Firmware Updater
     # test device affects TPM FDE so that it triggers the recovery key dialog
     PlatformHid.Type String    mkdir -p snap/firmware-updater/current/.config/firmware-updater
     PlatformHid.Keys Combo    Return
-    Builtin.Sleep    2
     PlatformHid.Type String    echo 'testDeviceAffectsFde
     PlatformHid.Keys Combo    Shift_L    ;
     PlatformHid.Keys Combo    space
@@ -44,11 +43,7 @@ Update Fake Webcam
     # Enter wrong recovery key
     Move Pointer To ${Y}/generic/passphrase-textfield.png
     EzClick
-    # There seem to be some issues with sending long strings over VNC - I had
-    # to break it in half here and add a sleep in between to get it to work
-    PlatformHid.Type String    00000-00000-00000-00000
-    Sleep    1
-    PlatformHid.Type String    -00000-00000-00000-00000
+    PlatformHid.Type String    00000-00000-00000-00000-00000-00000-00000-00000
     Move Pointer To ${Y}/generic/confirm-button.png
     EzClick
     Handle PolKit Prompt
