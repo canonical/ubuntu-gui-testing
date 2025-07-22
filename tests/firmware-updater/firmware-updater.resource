@@ -15,16 +15,9 @@ Open Firmware Updater
     [Documentation]         Open the firmware updater application with specific config
     Open Terminal
 
-    # Become root
-    PlatformHid.Type String    sudo -s
-    PlatformHid.Keys Combo    Return
-    PlatformVideoInput.Match Text    [sudo] password
-    PlatformHid.Type String    ubuntu
-    PlatformHid.Keys Combo    Return
-
     # Write firmware-updater config file to make it pretend updating the fwupd
     # test device affects TPM FDE so that it triggers the recovery key dialog
-    PlatformHid.Type String    mkdir -p /root/.config/firmware-updater
+    PlatformHid.Type String    mkdir -p snap/firmware-updater/current/.config/firmware-updater
     PlatformHid.Keys Combo    Return
     Builtin.Sleep    2
     PlatformHid.Type String    echo 'testDeviceAffectsFde
@@ -32,13 +25,11 @@ Open Firmware Updater
     PlatformHid.Keys Combo    space
     PlatformHid.Type String    true'
     PlatformHid.Keys Combo    Shift_L    .
-    PlatformHid.Type String    /root/.config/firmware-updater/firmware-updater.yml
+    PlatformHid.Type String    snap/firmware-updater/current/.config/firmware-updater/firmware-updater.yml
     PlatformHid.Keys Combo    Return
     Builtin.Sleep    5
 
-    # Run firmware-updater as root outside snap confimenet
-    PlatformHid.Type String    /snap/firmware-updater/current/bin/firmware-updater
-    PlatformHid.Keys Combo    Return
+    Start Application    firmware-updater
     PlatformVideoInput.Match Text    Firmware Updater    60
 
 Update Fake Webcam
