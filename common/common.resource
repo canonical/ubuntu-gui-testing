@@ -24,15 +24,15 @@ Run Sudo Command In Terminal
     [Arguments]    ${command}
     ${ampersand}    Create List    Shift_L    &
     PlatformHid.Type String    clear
-    PlatformHid.Keys Combo    space
+    PlatformHid.Keys Combo    Space
     PlatformHid.Keys Combo    ${ampersand}
     PlatformHid.Keys Combo    ${ampersand}
-    PlatformHid.Keys Combo    space
+    PlatformHid.Keys Combo    Space
     PlatformHid.Type String    ${command}
-    PlatformHid.Keys Combo    space
+    PlatformHid.Keys Combo    Space
     PlatformHid.Keys Combo    ${ampersand}
     PlatformHid.Keys Combo    ${ampersand}
-    PlatformHid.Keys Combo    space
+    PlatformHid.Keys Combo    Space
     PlatformHid.Type String    echo FINISHED-HIT
     BuiltIn.Sleep    2    # hacky
     PlatformHid.Keys Combo    Return
@@ -47,15 +47,15 @@ Run Command In Terminal
     [Arguments]    ${command}
     ${ampersand}    Create List    Shift_L    &
     PlatformHid.Type String    clear
-    PlatformHid.Keys Combo    space
+    PlatformHid.Keys Combo    Space
     PlatformHid.Keys Combo    ${ampersand}
     PlatformHid.Keys Combo    ${ampersand}
-    PlatformHid.Keys Combo    space
+    PlatformHid.Keys Combo    Space
     PlatformHid.Type String    ${command}
-    PlatformHid.Keys Combo    space
+    PlatformHid.Keys Combo    Space
     PlatformHid.Keys Combo    ${ampersand}
     PlatformHid.Keys Combo    ${ampersand}
-    PlatformHid.Keys Combo    space
+    PlatformHid.Keys Combo    Space
     PlatformHid.Type String    echo FINISHED-HIT
     BuiltIn.Sleep    2    # hacky
     PlatformHid.Keys Combo    Return
