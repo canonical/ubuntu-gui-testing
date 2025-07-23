@@ -35,12 +35,11 @@ Run Sudo Command In Terminal
     PlatformHid.Keys Combo    space
     PlatformHid.Type String    echo FINISHED-HIT
     BuiltIn.Sleep    2    # hacky
-    ${enter}    Create List    Return
-    PlatformHid.Keys Combo    ${enter}
+    PlatformHid.Keys Combo    Return
     BuiltIn.Sleep    4    # hacky
     PlatformHid.Type String    ubuntu
     BuiltIn.Sleep    2    # hacky
-    PlatformHid.Keys Combo    ${enter}
+    PlatformHid.Keys Combo    Return
     BuiltIn.Sleep    1    # hacky
     PlatformVideoInput.Match Text    FINISHED-HIT    120
 
@@ -59,8 +58,7 @@ Run Command In Terminal
     PlatformHid.Keys Combo    space
     PlatformHid.Type String    echo FINISHED-HIT
     BuiltIn.Sleep    2    # hacky
-    ${enter}    Create List    Return
-    PlatformHid.Keys Combo    ${enter}
+    PlatformHid.Keys Combo    Return
     PlatformVideoInput.Match Text    FINISHED-HIT    120
 
 Close Terminal
