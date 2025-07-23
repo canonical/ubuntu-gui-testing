@@ -14,9 +14,11 @@ Log In
     [Documentation]         Log in to desktop environment
     Log In
 
-Install fwupd tests
-    [Documentation]         Install fwupd-tests deb package
-    Install Debian Package    fwupd-tests
+Setup Fake Webcam
+    Setup Fake Webcam
+
+Setup Mock TPM FDE Update
+    Setup Mock TPM FDE Update
 
 Open Firmware Updater
     [Documentation]         Open the firmware-updater snap
@@ -25,3 +27,9 @@ Open Firmware Updater
 Update Fake Webcam
     [Documentation]         Update the fake webcam application
     Update Fake Webcam
+
+Enter Recovery Key
+    Enter Recovery Key
+
+Check For Successful Fake Webcam Update
+    Check For Successful Fake Webcam Update
