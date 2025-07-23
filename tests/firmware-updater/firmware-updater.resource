@@ -15,6 +15,8 @@ Open Firmware Updater
     [Documentation]         Open the firmware updater application with specific config
     Open Terminal
 
+    Run Sudo Command In Terminal    sudo snap connect firmware-updater:hostfs-usr-share-installed-tests-fwupd
+
     # Write firmware-updater config file to make it pretend updating the fwupd
     # test device affects TPM FDE so that it triggers the recovery key dialog
     PlatformHid.Type String    mkdir -p snap/firmware-updater/current/.config/firmware-updater
