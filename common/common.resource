@@ -22,7 +22,7 @@ Open Terminal
 
 Run Sudo Command In Terminal
     [Arguments]    ${command}
-    ${ampersand}    Create List    Shift_L    7
+    ${ampersand}    Create List    Shift_L    &
     PlatformHid.Type String    clear
     PlatformHid.Keys Combo    space
     PlatformHid.Keys Combo    ${ampersand}
@@ -46,7 +46,7 @@ Run Sudo Command In Terminal
 
 Run Command In Terminal
     [Arguments]    ${command}
-    ${ampersand}    Create List    Shift_L    7
+    ${ampersand}    Create List    Shift_L    &
     PlatformHid.Type String    clear
     PlatformHid.Keys Combo    space
     PlatformHid.Keys Combo    ${ampersand}
