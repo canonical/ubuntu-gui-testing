@@ -17,7 +17,7 @@ Open Firmware Updater
 
 Refresh Firmware Metadata
     Open Terminal
-    Run Sudo Command In Terminal    sudo fwupdmgr refresh
+    Run Sudo Command In Terminal    sudo fwupdmgr refresh --force
     Close Terminal
 
 Setup Fake Webcam
