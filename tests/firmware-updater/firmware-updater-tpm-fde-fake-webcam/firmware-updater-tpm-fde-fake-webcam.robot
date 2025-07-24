@@ -25,11 +25,16 @@ Open Firmware Updater
     Open Firmware Updater
 
 Update Fake Webcam
-    [Documentation]         Update the fake webcam application
-    Update Fake Webcam
+    Update Fake webcam
 
-Enter Recovery Key
-    Enter Recovery Key
+Handle Recovery Key Prompt
+    Handle Recovery Key Prompt
+
+Confirm Update
+    Confirm Update
+
+Handle PolKit Prompt
+    Handle PolKit Prompt
 
 Check For Successful Fake Webcam Update
     Check For Successful Fake Webcam Update

@@ -1,3 +1,5 @@
 ---
 robot_files:
   - "tests/firmware-updater/firmware-updater-tpm-fde/firmware-updater-tpm-fde-fake-webcam.robot"
+  - "tests/firmware-updater/firmware-updater-tpm-fde/firmware-updater-tpm-fde-dbx.robot"
+  - "tests/firmware-updater/firmware-updater-tpm-fde/firmware-updater-tpm-fde-ca.robot"

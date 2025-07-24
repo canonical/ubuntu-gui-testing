@@ -15,6 +15,11 @@ Open Firmware Updater
     Start Application    firmware-updater
     PlatformVideoInput.Match Text    Firmware Updater    60
 
+Refresh Firmware Metadata
+    Open Terminal
+    Run Sudo Command In Terminal    sudo fwupdmgr refresh
+    Close Terminal
+
 Setup Fake Webcam
     Install Debian Package    fwupd-tests
     Open Terminal
@@ -41,33 +46,42 @@ Setup Mock TPM FDE Update
     Builtin.Sleep    5
     Close Terminal
 
-Update Fake Webcam
-    [Documentation]         Make sure fake webcam device is selected
-    Move Pointer To ${Y}/generic/fake-webcam-tile.png
+Update ${device}
+    PlatformVideoInput.Match Text    ${device}    60
+    Move Pointer To ${device}
     EzClick
 
     # Update to latest version
+    Move Pointer To ${Y}/generic/update-to-latest-button.png
+    EzClick
+
+Handle Reboot Prompt
+    PlatformVideoInput.Match    ${Y}/generic/reboot-now-button.png    60
+    Move Pointer To ${Y}/generic/reboot-now-button.png
+    EzClick
+
+Handle Recovery Key Prompt
+    Move Pointer To ${Y}/generic/passphrase-textfield.png
+    EzClick
+    PlatformHid.Type String    ${RECOVERY_KEY}
+
+Confirm Update
     Move Pointer To ${Y}/generic/update-button.png
     EzClick
 
-Enter Recovery Key
-    # Enter wrong recovery key
-    Move Pointer To ${Y}/generic/passphrase-textfield.png
-    EzClick
-    PlatformHid.Type String    00000-00000-00000-00000-00000-00000-00000-00000
-    Move Pointer To ${Y}/generic/confirm-button.png
-    EzClick
-    Handle PolKit Prompt
-    PlatformVideoInput.Match Text    Recovery key does not work
-
-    # Enter correct recovery key
-    PlatformHid.Keys Combo    Tab
+Enter Recovery Key On Reboot
+    PlatformVideoInput.Match Text    Please enter the recovery key    120
     PlatformHid.Type String    ${RECOVERY_KEY}
-    Move Pointer To ${Y}/generic/confirm-button.png
-    EzClick
+    PlatformHid.Keys Combo    Return
 
 Check For Successful Fake Webcam Update
     PlatformVideoInput.Match    ${Y}/generic/fake-webcam-update-done.png    60
+
+Check For Successful UEFI CA Update
+    Open Terminal
+    PlatformHid.Type String    fwupdmgr get-updates
+    PlatformHid.Keys Combo    Return
+    PlatformVideoInput.Match    ${Y}/generic/uefi-ca-update-done.png    60
 
 Handle PolKit Prompt
     PlatformVideoInput.Match    ${Y}/generic/polkit-prompt.png
