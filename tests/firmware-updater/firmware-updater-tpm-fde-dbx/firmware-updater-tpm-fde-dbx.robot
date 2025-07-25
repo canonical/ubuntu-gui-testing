@@ -12,6 +12,9 @@ ${Z}    ${CURDIR}
 Log In
     Log In
 
+Refresh Firmware Metadata
+    Refresh Firmware Metadata
+
 Open Firmware Updater
     Open Firmware Updater
 
