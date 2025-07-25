@@ -1,0 +1,4 @@
+---
+robot_files:
+  - "tests/firmware-updater/firmware-updater-tpm-fde/firmware-updater-bitlocker-dbx.robot"
+  - "tests/firmware-updater/firmware-updater-tpm-fde/firmware-updater-bitlocker-ca.robot"

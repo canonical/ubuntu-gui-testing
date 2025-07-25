@@ -1,0 +1,4 @@
+---
+robot_files:
+  - "tests/firmware-updater/firmware-updater-tpm-fde/firmware-updater-dbx.robot"
+  - "tests/firmware-updater/firmware-updater-tpm-fde/firmware-updater-ca.robot"
