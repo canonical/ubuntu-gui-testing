@@ -46,12 +46,19 @@ Setup Mock TPM FDE Update
     Builtin.Sleep    5
     Close Terminal
 
+Setup Mock Bitlocker Partition
+    Open Terminal
+    Run Command In Terminal
+    ...    wget gitlab.com/cryptsetup/cryptsetup/-/raw/2cf4c9a360e6c9497898ad89a1cb3c81f77ce458/tests/bitlk-images.tar.xz
+    Run Command In Terminal    tar xvf bitlk-images.tar.xz bitlk-images/bitlk-aes-xts-128.img
+    Run Sudo Command In Terminal    sudo losetup -f --show bitlk-images/bitlk-aes-xts-128.img
+    Run Command In Terminal    sudo systemctl restart fwupd.service
+    Close Terminal
+
 Update ${device}
     PlatformVideoInput.Match Text    ${device}    60
     Move Pointer To ${device}
     EzClick
-
-    # Update to latest version
     Move Pointer To ${Y}/generic/update-to-latest-button.png
     EzClick
 
@@ -64,6 +71,10 @@ Handle Recovery Key Prompt
     Move Pointer To ${Y}/generic/passphrase-textfield.png
     EzClick
     PlatformHid.Type String    ${RECOVERY_KEY}
+
+Handle Recovery Key Checkbox
+    Move Pointer To I have recovery keys for all my encrypted drives
+    EzClick
 
 Confirm Update
     Move Pointer To ${Y}/generic/update-button.png
