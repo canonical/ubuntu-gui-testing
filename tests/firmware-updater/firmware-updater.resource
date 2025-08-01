@@ -14,7 +14,10 @@ ${RECOVERY_KEY}     62624-10584-39666-64718-31970-44050-59829-32069
 Open Firmware Updater
     [Documentation]    Open the firmware updater application
     Start Application    firmware-updater
-    PlatformVideoInput.Match Text    Firmware Updater    60
+    Match Text    Firmware Updater    90
+    ${cnf}=    Run Keyword And Return Status
+    ...    Match Text    Command not found    10
+    IF    ${cnf}    Fail    firmware-updater command not found
 
 Refresh Firmware Metadata
     [Documentation]    Fetch the firmware catalog from LVFS
