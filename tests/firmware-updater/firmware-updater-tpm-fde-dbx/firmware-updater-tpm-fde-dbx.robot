@@ -16,7 +16,7 @@ Log In
     Log In
 
 Refresh Firmware Metadata
-    [Documentation]    Fetch the firmware catalog    from LVFS
+    [Documentation]    Fetch the firmware catalog from LVFS
     Refresh Firmware Metadata
 
 Open Firmware Updater
