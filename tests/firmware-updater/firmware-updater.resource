@@ -12,15 +12,18 @@ ${RECOVERY_KEY}     62624-10584-39666-64718-31970-44050-59829-32069
 
 *** Keywords ***
 Open Firmware Updater
+    [Documentation]    Open the firmware updater application
     Start Application    firmware-updater
     PlatformVideoInput.Match Text    Firmware Updater    60
 
 Refresh Firmware Metadata
+    [Documentation]    Fetch the firmware catalog    from LVFS
     Open Terminal
     Run Sudo Command In Terminal    sudo fwupdmgr refresh --force
     Close Terminal
 
 Setup Fake Webcam
+    [Documentation]    Setup the fake webcam device from fwupd-tests
     Install Debian Package    fwupd-tests
     Open Terminal
     Run Sudo Command In Terminal    sudo echo foo
@@ -31,8 +34,7 @@ Setup Fake Webcam
     Close Terminal
 
 Setup Mock TPM FDE Update
-    # Write firmware-updater config file to make it pretend updating the fwupd
-    # test device affects TPM FDE so that it triggers the recovery key dialog
+    [Documentation]    Write firmware-updater config file to make it pretend updating the fwupd    test device affects TPM FDE so that it triggers the recovery key dialog
     Open Terminal
     PlatformHid.Type String    mkdir -p snap/firmware-updater/current/.config/firmware-updater
     PlatformHid.Keys Combo    Return
@@ -47,6 +49,7 @@ Setup Mock TPM FDE Update
     Close Terminal
 
 Setup Mock Bitlocker Partition
+    [Documentation]    Setup a mock Bitlocker partition by loopmounting a test image from cryptsetup
     Open Terminal
     Run Command In Terminal
     ...    wget gitlab.com/cryptsetup/cryptsetup/-/raw/2cf4c9a360e6c9497898ad89a1cb3c81f77ce458/tests/bitlk-images.tar.xz
@@ -56,6 +59,7 @@ Setup Mock Bitlocker Partition
     Close Terminal
 
 Update ${device}
+    [Documentation]    Update the given device
     PlatformVideoInput.Match Text    ${device}    60
     Move Pointer To ${device}
     EzClick
@@ -63,38 +67,46 @@ Update ${device}
     EzClick
 
 Handle Reboot Prompt
+    [Documentation]    Confirm to reboot the system
     PlatformVideoInput.Match    ${Y}/generic/reboot-now-button.png    60
     Move Pointer To ${Y}/generic/reboot-now-button.png
     EzClick
 
 Handle Recovery Key Prompt
+    [Documentation]    Enter the recovery key in the dialog
     Move Pointer To ${Y}/generic/passphrase-textfield.png
     EzClick
     PlatformHid.Type String    ${RECOVERY_KEY}
 
 Handle Recovery Key Checkbox
+    [Documentation]    Tick the checkbox in the recovery key confirmation dialog
     Move Pointer To I have recovery keys for all my encrypted drives
     EzClick
 
 Confirm Update
+    [Documentation]    Confirm the firmware update
     Move Pointer To ${Y}/generic/update-button.png
     EzClick
 
 Enter Recovery Key On Reboot
+    [Documentation]    Enter the recovery key on reboot
     PlatformVideoInput.Match Text    Please enter the recovery key    120
     PlatformHid.Type String    ${RECOVERY_KEY}
     PlatformHid.Keys Combo    Return
 
 Check For Successful Fake Webcam Update
+    [Documentation]    Confirm that the Fake Webcam has been updated successfully
     PlatformVideoInput.Match    ${Y}/generic/fake-webcam-update-done.png    60
 
 Check For Successful UEFI CA Update
+    [Documentation]    Confirm that the Microsoft certificate has been updated successfully
     Open Terminal
     PlatformHid.Type String    fwupdmgr get-updates
     PlatformHid.Keys Combo    Return
     PlatformVideoInput.Match    ${Y}/generic/uefi-ca-update-done.png    60
 
 Handle PolKit Prompt
+    [Documentation]    Enter the user password in the polkit prompt to allow checking the recovery key
     PlatformVideoInput.Match    ${Y}/generic/polkit-prompt.png
     PlatformHid.Type String    ubuntu
     PlatformHid.Keys Combo    Return
