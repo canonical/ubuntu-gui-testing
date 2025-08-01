@@ -17,7 +17,7 @@ Open Firmware Updater
     PlatformVideoInput.Match Text    Firmware Updater    60
 
 Refresh Firmware Metadata
-    [Documentation]    Fetch the firmware catalog    from LVFS
+    [Documentation]    Fetch the firmware catalog from LVFS
     Open Terminal
     Run Sudo Command In Terminal    sudo fwupdmgr refresh --force
     Close Terminal
@@ -34,7 +34,7 @@ Setup Fake Webcam
     Close Terminal
 
 Setup Mock TPM FDE Update
-    [Documentation]    Write firmware-updater config file to make it pretend updating the fwupd    test device affects TPM FDE so that it triggers the recovery key dialog
+    [Documentation]    Write firmware-updater config file to make it pretend updating the fwupd test device affects TPM FDE so that it triggers the recovery key dialog
     Open Terminal
     PlatformHid.Type String    mkdir -p snap/firmware-updater/current/.config/firmware-updater
     PlatformHid.Keys Combo    Return

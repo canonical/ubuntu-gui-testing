@@ -20,7 +20,7 @@ Setup Fake Webcam
     Setup Fake Webcam
 
 Setup Mock TPM FDE Update
-    [Documentation]    Write firmware-updater config file to make it pretend updating the fwupd    test device affects TPM FDE so that it triggers the recovery key dialog
+    [Documentation]    Write firmware-updater config file to make it pretend updating the fwupd test device affects TPM FDE so that it triggers the recovery key dialog
     Setup Mock TPM FDE Update
 
 Open Firmware Updater
