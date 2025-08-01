@@ -31,10 +31,6 @@ Confirm Update
     [Documentation]    Confirm the firmware update
     Confirm Update
 
-Handle PolKit Prompt
-    [Documentation]    Enter the user password in the polkit prompt to allow checking the recovery key
-    Handle PolKit Prompt
-
 Handle Reboot Prompt
     [Documentation]    Confirm to reboot the system
     Handle Reboot Prompt
