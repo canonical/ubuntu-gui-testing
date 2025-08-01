@@ -3,7 +3,7 @@ Documentation       Update UEFI dbx
 
 Resource            ${Z}/../firmware-updater.resource
 
-Test Tags           exit-on-failure
+Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-word
 
 
 *** Variables ***
