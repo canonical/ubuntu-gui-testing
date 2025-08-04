@@ -26,6 +26,7 @@ REPO_ROOT_DIR="${SCRIPT_DIR}/../"
 APP_NAME="${1}"
 
 ROBOT_FILE_TEMPLATE="""*** Settings ***
+Documentation        Test ${APP_NAME} basic functionality
 Resource        \${Z}/../${APP_NAME}.resource
 
 Test Tags       robot:exit-on-failure    # robocop: off=tag-with-reserved-word
@@ -37,6 +38,7 @@ Test Tags       robot:exit-on-failure    # robocop: off=tag-with-reserved-word
 
 *** Test Cases ***
 Function One
+    [Documentation]        My first test case
     Function One
 """
 
@@ -53,6 +55,7 @@ Resource            \${Y}/common/common.resource
 
 *** Keywords ***
 Function One
+    [Documentation]        My first function
     BuiltIn.Sleep   1
 """
 
@@ -67,8 +70,8 @@ EMPTY_PNG="${GENERIC_DIR}/${APP_NAME}.png"
 
 mkdir -p "${APP_DIR}"
 mkdir -p "${BASIC_TC_DIR}"
-printf "%s\n" "${ROBOT_FILE_TEMPLATE}" > "${BASIC_TC_SCRIPT}"
-printf "%s\n" "${RESOURCE_FILE_TEMPLATE}" > "${RESOURCE_FILE}"
+printf "%s" "${ROBOT_FILE_TEMPLATE}" > "${BASIC_TC_SCRIPT}"
+printf "%s" "${RESOURCE_FILE_TEMPLATE}" > "${RESOURCE_FILE}"
 mkdir -p "${GENERIC_DIR}"
 touch "${EMPTY_PNG}"
 cd "${APP_DIR}" || exit

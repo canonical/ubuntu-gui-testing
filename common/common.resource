@@ -117,3 +117,23 @@ Log In
     PlatformHid.Keys Combo    ${ret}
     BuiltIn.Sleep    2
     PlatformVideoInput.Match    ${X}/circle-of-friends.png    60
+
+Match Text Exactly
+    # https://github.com/canonical/ubuntu-gui-testing/issues/37
+    [Documentation]    Matches the specified text exactly: no subphrases will be matched
+    [Arguments]    ${text}
+    ${matches}    ${image}    PlatformVideoInput.Match Text    ${text}
+    FOR    ${match}    IN    @{matches}
+        IF    '${match}[text]'.encode('ascii', 'ignore').decode('ascii').strip() == '${text}'
+            RETURN    ${match}    ${image}
+        END
+    END
+    Fail    Could not match '${text}' exactly. Other results were: ${matches}, ${image}
+
+Move Pointer To Text Exactly
+    # https://github.com/canonical/ubuntu-gui-testing/issues/37
+    [Documentation]    Move the pointer to the location identified by the text, using Match Text Exactly
+    [Arguments]    ${text}
+    ${match}    ${_}    Match Text Exactly    ${text}
+    ${region}    Set Variable    ${match}[region]
+    PlatformHid.Move Pointer To Absolute    ${region.center.x}    ${region.center.y}
