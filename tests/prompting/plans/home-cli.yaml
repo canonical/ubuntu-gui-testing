@@ -1,3 +1,4 @@
 ---
 robot_files:
   - "tests/prompting/prompting-home-lxd/prompting-home-lxd.robot"
+  - "tests/prompting/prompting-home-curl/prompting-home-curl.robot"
