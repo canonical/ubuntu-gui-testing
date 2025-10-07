@@ -35,38 +35,35 @@ First Launch
     Ensure No Prompts
     Close Current Window
 
-Open Image With Gimp From Nautilus
-    [Documentation]    Open and image file with GIMP from the file manager and handle the prompt
+Open Nautilus
+    [Documentation]    Open file explorer
     Start Application    nautilus
     BuiltIn.Sleep    1
-    Click RIGHT Button On TESTIMAGE
-    BuiltIn.Sleep    1
-    Click LEFT Button On 'Open with...'
-    BuiltIn.Sleep    1
-    Click LEFT Button On GNU Image Manipulation
-    BuiltIn.Sleep    1
-    Keys Combo    Return
-    Reply To Simple Prompt    gimp wants to get read access    Allow always
-    Click LEFT Button On Welcome to GIMP
-    BuiltIn.Sleep    5
-    Close Current Window    # close GIMP welcome screen
-    BuiltIn.Sleep    5
 
-Save Image In Pictures Directory
-    [Documentation]    Save the opened test file in the Pictures directory and answer all prompts
-    Keys Combo    Control_L    s
-    Reply To Simple Prompt    gimp wants to get read access to your Home folder    Allow always
-    Click LEFT Button On Pictures
-    BuiltIn.Sleep    1
-    Keys Combo    Return
-    Reply To Simple Prompt    gimp wants to get read access to the Pictures folder    Allow always
-    BuiltIn.Sleep    1
-    Keys Combo    Return
-    Reply To Simple Prompt    gimp wants to get write access to TESTIMAGE.xcf    Allow always
-    BuiltIn.Sleep    1
+Open Image And Deny All Prompts
+    [Documentation]    Open and image file with GIMP from the file manager and deny all prompts
+    Open Image With Gimp From Nautilus    Deny once
+
+Close GIMP
+    [Documentation]    Close GIMP and try again
     Close Current Window
+
+Open Image And Allow All Prompts
+    [Documentation]    Open and image file with GIMP from the file manager and allow all prompts
+    Open Image With Gimp From Nautilus    Allow always
+
+Save Image And Deny All Prompts
+    [Documentation]    Save the opened test file in the Pictures directory and deny all prompts
+    Save Gimp Image In Pictures Directory    Deny once
+
+Save Image And Allow All Prompts
+    [Documentation]    Save the opened test file in the Pictures directory and allow all prompts
+    Save Gimp Image In Pictures Directory    Allow always
+
+Verify Saved Image
+    [Documentation]    Verifies that the image has been saved to the Pictures directory
+    Close Current Window    # close GIMP
     BuiltIn.Sleep    5
     Click LEFT Button On Pictures
-    BuiltIn.Sleep    1
     Keys Combo    Return
     Match Text    TESTIMAGE
