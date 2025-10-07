@@ -31,6 +31,13 @@ Open Firefox
     Start Application    firefox
     Match Text    Firefox    60
 
+Open Gimp
+    [Documentation]    Open gimp
+    Start Application    gimp
+    Match Text    Welcome to GIMP    60
+    Close Current Window    # Close the welcome window
+    Match Text    GNU Image Manipulation Program
+
 Open Firefox Tab
     [Documentation]    Open a new tab in Firefox, navigate to the given URL and match the title of the website
     [Arguments]    ${url}    ${title}
