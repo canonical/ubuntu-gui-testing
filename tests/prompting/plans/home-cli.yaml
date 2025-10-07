@@ -3,3 +3,4 @@ robot_files:
   - "tests/prompting/prompting-home-lxd/prompting-home-lxd.robot"
   - "tests/prompting/prompting-home-curl/prompting-home-curl.robot"
   - "tests/prompting/prompting-home-docker/prompting-home-docker.robot"
+  - "tests/prompting/prompting-home-ollama/prompting-home-ollama.robot"

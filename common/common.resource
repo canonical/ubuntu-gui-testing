@@ -46,7 +46,7 @@ Run Sudo Command In Terminal
     BuiltIn.Sleep    2    # hacky
     Keys Combo    ${enter}
     BuiltIn.Sleep    1    # hacky
-    Match Text    FINISHED-HIT    120
+    Match Text    FINISHED-HIT    240
 
 Run Command In Terminal
     [Documentation]         Run a command in the terminal
@@ -68,7 +68,7 @@ Run Command In Terminal
     ${enter}    Create List    Return
     Keys Combo    ${enter}
     BuiltIn.Sleep    2    # hacky
-    Match Text    FINISHED-HIT    120
+    Match Text    FINISHED-HIT    240
 
 Close Terminal
     [Documentation]         Close terminal with ctrl+shift+w
