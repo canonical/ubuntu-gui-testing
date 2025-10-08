@@ -118,6 +118,22 @@ Log In
     BuiltIn.Sleep    2
     Match    ${X}/circle-of-friends.png    60
 
+Log Out
+    [Documentation]    Log out of the desktop session
+    Start Application    gnome-session-quit --logout
+    Match Text    Log Out
+    Keys Combo    Tab
+    Keys Combo    Return
+
+Check File Exists
+    [Documentation]    Asserts that the given file exists and optionally deletes it
+    [Arguments]    ${path}    ${remove}=False
+    Open Terminal
+    Run Command In Terminal    [ -e ${path} ] && echo FILE EXISTS
+    Match Text    FILE EXISTS    1
+    IF    ${remove}    Run Command In Terminal    rm -f ${path}
+    Close Terminal
+
 Close Current Window
     [Documentation]    Close the current window
     Keys Combo    Alt    F4
