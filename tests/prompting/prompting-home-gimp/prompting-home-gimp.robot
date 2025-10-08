@@ -40,6 +40,29 @@ Open Nautilus
     Start Application    nautilus
     BuiltIn.Sleep    1
 
+Open Image And Allow All Prompts Until Logout
+    [Documentation]    Open and image file with GIMP from the file manager and allow all prompts
+    Open Image With Gimp From Nautilus    Allow until logout
+
+Save Image And Allow All Prompts Until Logout
+    [Documentation]    Save the opened test file in the Pictures directory and allow all prompts
+    Save Gimp Image In Pictures Directory    Allow until logout
+
+Check For Test File And Remove It
+    [Documentation]    Verifies creation of the test file and deletes it
+    Check File Exists    ~/Pictures/TESTIMAGE.xcf    True
+
+Log Out And Log In Again
+    [Documentation]    Log out of the desktop session and log back in again after a while
+    Log Out
+    BuiltIn.Sleep    30
+    Log In
+
+Open Nautilus Again
+    [Documentation]    Open file explorer
+    Start Application    nautilus
+    BuiltIn.Sleep    1
+
 Open Image And Deny All Prompts
     [Documentation]    Open and image file with GIMP from the file manager and deny all prompts
     Open Image With Gimp From Nautilus    Deny once
@@ -62,8 +85,4 @@ Save Image And Allow All Prompts
 
 Verify Saved Image
     [Documentation]    Verifies that the image has been saved to the Pictures directory
-    Close Current Window    # close GIMP
-    BuiltIn.Sleep    5
-    Click LEFT Button On Pictures
-    Keys Combo    Return
-    Match Text    TESTIMAGE
+    Check File Exists    ~/Pictures/TESTIMAGE.xcf

@@ -140,9 +140,7 @@ Open Image With Gimp From Nautilus
     Keys Combo    Return
     IF    $reply == 'Deny once'
         Reply To Simple Prompt    gimp wants to get read access    ${reply}
-        Focus Prompt
         Reply To Simple Prompt    gimp wants to get read access    ${reply}
-        Focus Prompt
         Reply To Simple Prompt    gimp wants to get read access    ${reply}
         Match Text    GIMP Message
         Match Text    Permission denied
@@ -185,6 +183,7 @@ Save Gimp Image In Pictures Directory
         Match Text    GIMP Message
         Match Text    Error creating '/home/ubuntu/Pictures/TESTIMAGE.xcf'
         Click LEFT Button On GIMP Message
+        BuiltIn.Sleep    1
         Keys Combo    Return
         BuiltIn.Sleep    1
         Close Current Window
