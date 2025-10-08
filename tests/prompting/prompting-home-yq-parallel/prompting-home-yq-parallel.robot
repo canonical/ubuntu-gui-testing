@@ -23,9 +23,7 @@ Install yq
 
 Enable Prompting
     [Documentation]    Enable prompting
-    Open Security Center
     Enable Prompting
-    Close Current Window
 
 Trigger First yq Prompt
     [Documentation]    Open a terminal, run yq on a test file and wait for a prompt
