@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation       Spawns a single prompt and replies to it
+Documentation       Downloads a file with Chromium
 
 Resource            ${Z}/../prompting.resource
 
@@ -15,14 +15,17 @@ Log In
     [Documentation]    Log in to desktop session
     Log In
 
+Install Chromium
+    [Documentation]    Install the chromium snap
+    Install Snap Package    chromium
+
 Enable Prompting
     [Documentation]    Enable prompting
     Enable Prompting
 
 Download Example File
     [Documentation]    Download example.com as html
-    Open Firefox
+    Open Chromium
     Open Browser Tab    example.com    Example Domain
     Save File
-    Reply To Simple Prompt    Firefox wants to get write access    Allow always
-    Verify Firefox Download
+    Reply To Simple Prompt    chromium wants to get write access    Allow always
