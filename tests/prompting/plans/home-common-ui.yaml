@@ -1,0 +1,3 @@
+---
+robot_files:
+  - "tests/prompting/prompting-home-gimp/prompting-home-gimp.robot"
