@@ -10,18 +10,15 @@ ${Y}    ${CURDIR}
 
 
 *** Keywords ***
-Open Security Center
-    [Documentation]    Open the security center
-    Start Application    desktop-security-center
-    Match Text    Security Center    60
-
 Enable Prompting
     [Documentation]    Enable snap prompting in the security center
+    Start Application    desktop-security-center
     BuiltIn.Sleep    5
     Move Pointer To ${Y}/generic/prompting-toggle-disabled.png
     EzClick
     Handle PolKit Prompt
     Match    ${Y}/generic/prompting-toggle-enabled.png    60
+    Close Current Window
 
 Handle PolKit Prompt
     [Documentation]    Handle a PolKit prompt
@@ -34,30 +31,25 @@ Open Firefox
     Start Application    firefox
     Match Text    Firefox    60
 
-Open Example Domain
-    [Documentation]    Open a new tab in Firefox and navigate to example.com
+Open Firefox Tab
+    [Documentation]    Open a new tab in Firefox, navigate to the given URL and match the title of the website
+    [Arguments]    ${url}    ${title}
     Keys Combo    Ctrl    t
-    Type String    example.com
+    Type String    ${url}
     Keys Combo    Return
-    Match Text    Example Domain 60
+    Match Text    ${title}    60
 
 Save File
-    [Documentation]    Download current website in Firefox
+    [Documentation]    Common 'Save File' action
     Keys Combo    Ctrl    s
     Match Text    Save
     BuiltIn.Sleep    1
     Keys Combo    Return
     BuiltIn.Sleep    1
 
-Allow Firefox Download Prompt
-    [Documentation]    Give Firefox write access when downloading a file
-    Match Text    Firefox wants to get write access
-    Click LEFT Button On Allow always
-    BuiltIn.Sleep    1
-
-Verify Download
+Verify Firefox Download
     [Documentation]    Verify successful download of a file in Firefox
-    Click LEFT Button On ${Y}/generic/downloads.png
+    Click LEFT Button On ${Y}/generic/home/downloads.png
     Match Text    Completed 60
 
 Focus Prompt
@@ -72,32 +64,20 @@ Ensure No Prompts
 Trigger First yq Prompt
     [Documentation]    Open a terminal, run yq on a test file and wait for a prompt
     Open Terminal
-    Type String    echo 'a
-    Keys Combo    Shift_L    ;
-    Type String    1'
-    Keys Combo    Shift_L    .
-    Type String    a.yaml
-    Keys Combo    Return
-    Type String    yq a.yaml
-    Keys Combo    Return
+    Run Simple Command    echo 'a:1'>a.yaml
+    Run Simple Command    yq a.yaml
     Match Text    yq wants to get read access to a.yaml
 
 Trigger Second yq Prompt
     [Documentation]    Open a terminal, run yq on a second test file and wait for another prompt
     Open Terminal
-    Type String    echo 'b
-    Keys Combo    Shift_L    ;
-    Type String    2'
-    Keys Combo    Shift_L    .
-    Type String    b.yaml
-    Keys Combo    Return
-    Type String    yq b.yaml
-    Keys Combo    Return
+    Run Simple Command    echo 'b:2'>b.yaml
+    Run Simple Command    yq b.yaml
     Match Text    yq wants to get read access to b.yaml
 
 Deny Second yq Prompt
     [Documentation]    Deny prompt for second yq command, verify that read access is denied
-    Click LEFT Button On Deny once
+    Reply To Simple Prompt    yq wants to get read access to b.yaml    Deny once
     Match Text    Error: open b.yaml: permission denied
     Type String    exit
     Keys Combo    Return
@@ -105,7 +85,7 @@ Deny Second yq Prompt
 Allow First yq Prompt
     [Documentation]    Allow the prompt for the first yq command, verify that the command succeeds
     Focus Prompt
-    Click LEFT Button On Allow until logout
+    Reply To Simple Prompt    yq wants to get read access to a.yaml    Allow until logout
     Match Text    a: 1
 
 Answer Both yq Prompts
@@ -118,3 +98,23 @@ Answer Both yq Prompts
     Keys Combo    Return
     Match Text    a: 1
     Ensure No Prompts
+
+Reply To Simple Prompt
+    [Documentation]    Replies to a prompt given the prompt text and a reply
+    [Arguments]    ${prompt}    ${reply}
+    Match Text    ${prompt}    30
+    Click LEFT Button On ${reply}
+
+Run Simple Command
+    [Documentation]    Run command in terminal without verifying the exit status
+    [Arguments]    ${cmd}
+    Type String    ${cmd}
+    Keys Combo    Return
+
+Cheese No Device
+    [Documentation]    Find "cheese" application open with no device message
+    Match    ${Y}/generic/camera/cheese_no_device.png    30
+
+Cheese With Video
+    [Documentation]    Find "cheese" application open with fake test video
+    Match    ${Y}/generic/camera/cheese_with_video.png    30
