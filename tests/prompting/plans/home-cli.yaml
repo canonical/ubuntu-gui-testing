@@ -1,0 +1,4 @@
+---
+tests:
+  - Prompting-Home-Docker:
+    entrypoint: "tests/prompting/"
