@@ -1,0 +1,4 @@
+---
+tests:
+  - Prompting-Home-Lxd:
+    entrypoint: "tests/prompting/"

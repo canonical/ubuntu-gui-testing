@@ -127,6 +127,7 @@ Run Simple Command
     [Arguments]    ${cmd}
     Type String    ${cmd}
     Keys Combo    Return
+    BuiltIn.Sleep    0.1
 
 Cheese No Device
     [Documentation]    Find "cheese" application open with no device message
