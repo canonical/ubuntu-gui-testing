@@ -1,3 +1,6 @@
 ---
-robot_files:
-  - "tests/prompting/prompting-home-gimp/prompting-home-gimp.robot"
+tests:
+  - Prompting-Home-GIMP:
+    entrypoint: "tests/prompting/"
+  - Prompting-Home-Audacity:
+    entrypoint: "tests/prompting/"

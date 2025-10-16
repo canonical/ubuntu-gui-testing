@@ -197,3 +197,54 @@ Save Gimp Image In Pictures Directory
         Close Current Window
     END
     BuiltIn.Sleep    3
+
+Open Audio With Audacity From Nautilus
+    [Documentation]    Open an audio file with Audacity from the file manager and handle the prompt
+    [Arguments]    ${reply}
+    Click RIGHT Button On TESTAUDIO
+    BuiltIn.Sleep    1
+    Click LEFT Button On 'Open with...'
+    BuiltIn.Sleep    1
+    Click LEFT Button On Audacity
+    BuiltIn.Sleep    1
+    Keys Combo    Return
+    IF    $reply == 'Deny once'
+        Reply To Simple Prompt    audacity wants to get read access    ${reply}
+        Reply To Simple Prompt    audacity wants to get read access    ${reply}
+        Reply To Simple Prompt    audacity wants to get read access    ${reply}
+        Match Text    Error opening file    60
+        Click LEFT Button On OK
+    ELSE
+        Reply To Simple Prompt    audacity wants to get read access    ${reply}
+        Reply To Simple Prompt    audacity wants to get read access    ${reply}
+        Match Text    TESTAUDIO    60
+    END
+    BuiltIn.Sleep    3
+
+Save Audacity Audio In Music Directory
+    [Documentation]    Save the opened test file in the Music directory and answer all prompts
+    [Arguments]    ${reply}
+    Keys Combo    Control_L    s
+    BuiltIn.Sleep    1
+    Click LEFT Button On Music
+    BuiltIn.Sleep    1
+    Focus Prompt
+    Reply To Simple Prompt    audacity wants to get read access to the Music folder    ${reply}
+    IF    $reply == 'Deny once'
+        Reply To Simple Prompt    audacity wants to get read access to the Music folder    ${reply}
+        Match Text    Permission denied
+        Keys Combo    Return
+    ELSE
+        BuiltIn.Sleep    1
+        Type String    TESTAUDIO.aup3
+    END
+    BuiltIn.Sleep    1
+    Keys Combo    Return
+    Reply To Simple Prompt    audacity wants to get write access to TESTAUDIO.aup3    ${reply}
+    IF    $reply == 'Deny once'
+        Match Text    Error Writing to File
+        Match Text    failed to write file '/home/ubuntu/Music/TESTAUDIO.aup3'
+        Keys Combo    Return
+        BuiltIn.Sleep    1
+    END
+    BuiltIn.Sleep    3
