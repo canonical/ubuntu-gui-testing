@@ -55,11 +55,11 @@ Open Gimp
 
 Open Browser Tab
     [Documentation]    Open a new tab in a web browser, navigate to the given URL and match the title of the website
-    [Arguments]    ${url}    ${title}
+    [Arguments]    ${url}    ${title}=${EMPTY}
     Keys Combo    Ctrl    t
     Type String    ${url}
     Keys Combo    Return
-    Match Text    ${title}    60
+    IF    '${title}' != ''    Match Text    ${title}    60
 
 Save File
     [Documentation]    Common 'Save File' action
