@@ -133,6 +133,13 @@ Check File Exists
     IF    ${remove}    Run Command In Terminal    rm -f ${path}
     Close Terminal
 
+Check File Does Not Exist
+    [Documentation]    Asserts that the given file does not exist
+    [Arguments]    ${path}
+    Open Terminal
+    Run Command In Terminal    [ ! -e ${path} ]
+    Close Terminal
+
 Close Current Window
     [Documentation]    Close the current window
     Keys Combo    Alt    F4
