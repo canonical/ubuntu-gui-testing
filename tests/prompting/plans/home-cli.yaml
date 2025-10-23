@@ -1,0 +1,4 @@
+---
+tests:
+  Prompting-Home-Curl:
+    entrypoint: "tests/prompting/"
