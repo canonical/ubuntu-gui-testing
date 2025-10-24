@@ -26,7 +26,7 @@ Enable Prompting
 Trigger Firefox Download Prompt
     [Documentation]    Trigger prompt when downloading example.com as html
     Open Firefox
-    Open Firefox Tab    example.com    Example Domain
+    Open Browser Tab    example.com    Example Domain
     Save File
 
 Trigger yq Prompt
