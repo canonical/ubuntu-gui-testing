@@ -212,3 +212,65 @@ Save Gimp Image In Pictures Directory
         Close Current Window
     END
     BuiltIn.Sleep    3
+
+Open File With Notepad Plus Plus From Nautilus
+    [Documentation]    Open a file with Notepad++ from the file manager and handle the prompt
+    [Arguments]    ${reply}
+    Click RIGHT Button On TESTFILE
+    BuiltIn.Sleep    1
+    Click LEFT Button On 'Open with...'
+    BuiltIn.Sleep    1
+    Click LEFT Button On Notepad++
+    BuiltIn.Sleep    1
+    Keys Combo    Return
+    IF    $reply == 'Deny once'
+        FOR    ${_}    IN RANGE    5
+            Reply To Simple Prompt    notepad-plus-plus wants to get read access    ${reply}
+        END
+        Match Text    ERROR
+        Match Text    Can not open file
+        Keys Combo    Return
+    ELSE
+        Reply To Simple Prompt    notepad-plus-plus wants to get read access    ${reply}
+        Reply To Simple Prompt    notepad-plus-plus wants to get read access    ${reply}
+        Reply To Simple Prompt    notepad-plus-plus wants to get read access    ${reply}
+        Match Text    TESTFILE
+        Match Text    hello world
+    END
+    BuiltIn.Sleep    3
+
+Save Notepad Plus Plus File In Documents Directory
+    [Documentation]    Save the opened test file in the Documents directory and answer all prompts
+    [Arguments]    ${reply}
+    Keys Combo    Control_L    Alt_L    s
+    Reply To Simple Prompt    notepad-plus-plus wants to get read access    ${reply}
+    IF    $reply == 'Deny once'
+        # the application asks for read permissions for the 8 folders inside
+        # the $HOME directory, and for every directory 6 prompt are spawned
+        FOR    ${_}    IN RANGE    48
+            Reply To Simple Prompt    notepad-plus-plus wants to get read access    ${reply}
+        END
+    END
+    BuiltIn.Sleep    1
+    IF    $reply == 'Deny once'
+        FOR    ${_}    IN RANGE    10
+            Reply To Simple Prompt    notepad-plus-plus wants to get read access    ${reply}
+        END
+        Click LEFT Button On Documents
+        Keys Combo    Return
+        Reply To Simple Prompt    notepad-plus-plus wants to get write access    ${reply}
+        Match Text    Save Failed
+        Keys Combo    Return
+    ELSE
+        FOR    ${_}    IN RANGE    8
+            Reply To Simple Prompt    notepad-plus-plus wants to get read access    ${reply}
+        END
+        BuiltIn.Sleep    1
+        Click LEFT Button On Documents
+        BuiltIn.Sleep    1
+        Keys Combo    Return
+        Reply To Simple Prompt    notepad-plus-plus wants to get write access    ${reply}
+        Reply To Simple Prompt    notepad-plus-plus wants to get write access    ${reply}
+    END
+    Close Current Window
+    BuiltIn.Sleep    3
