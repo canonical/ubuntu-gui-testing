@@ -41,6 +41,11 @@ Open Firefox
     Start Application    firefox
     Match Text    Firefox    60
 
+Open Chromium
+    [Documentation]    Open Chromium
+    Start Application    chromium
+    Match Text    New Tab    60
+
 Open Thunderbird
     [Documentation]    Open Thunderbird and reply to startup prompts
     [Arguments]    ${reply}
@@ -58,13 +63,13 @@ Open Gimp
     Close Current Window    # Close the welcome window
     Match Text    GNU Image Manipulation Program
 
-Open Firefox Tab
-    [Documentation]    Open a new tab in Firefox, navigate to the given URL and match the title of the website
-    [Arguments]    ${url}    ${title}
+Open Browser Tab
+    [Documentation]    Open a new tab in a web browser, navigate to the given URL and match the title of the website
+    [Arguments]    ${url}    ${title}=${EMPTY}
     Keys Combo    Ctrl    t
     Type String    ${url}
     Keys Combo    Return
-    Match Text    ${title}    60
+    IF    '${title}' != ''    Match Text    ${title}    60
 
 Save File
     [Documentation]    Common 'Save File' action
