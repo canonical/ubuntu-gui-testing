@@ -4,3 +4,5 @@ tests:
     entrypoint: "tests/prompting/"
   Prompting-Home-Docker:
     entrypoint: "tests/prompting/"
+  Prompting-Home-Lxd:
+    entrypoint: "tests/prompting/"
