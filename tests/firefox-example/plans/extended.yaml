@@ -1,6 +1,6 @@
 ---
 tests:
-  - Firefox-Example-Basic:
+  Firefox-Example-Basic:
     entrypoint: tests/firefox-example
-  - Firefox-Example-New-Tab:
+  Firefox-Example-New-Tab:
     entrypoint: tests/firefox-example

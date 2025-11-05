@@ -1,4 +1,4 @@
 ---
 tests:
-  - Gnome-Shell-Basic:
+  Gnome-Shell-Basic:
     entrypoint: "tests/gnome-shell"

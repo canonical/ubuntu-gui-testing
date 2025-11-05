@@ -1,8 +1,8 @@
 ---
 tests:
-  - Prompting-Home-Yq-Parallel:
+  Prompting-Home-Yq-Parallel:
     entrypoint: "tests/prompting/"
-  - Prompting-Home-Yq-Parallel-Cancellation:
+  Prompting-Home-Yq-Parallel-Cancellation:
     entrypoint: "tests/prompting/"
-  - Prompting-Home-Yq-Firefox-Parallel:
+  Prompting-Home-Yq-Firefox-Parallel:
     entrypoint: "tests/prompting/"

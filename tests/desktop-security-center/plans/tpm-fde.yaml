@@ -1,22 +1,22 @@
 ---
 tests:
-  - Desktop-Security-Center:
+  Desktop-Security-Center:
     entrypoint: "tests/desktop-security-center/"
     requirements:
       tpm: true
-  - Desktop-Security-Center-Tpm-Fde-Change-Passphrase:
+  Desktop-Security-Center-Tpm-Fde-Change-Passphrase:
     entrypoint: "tests/desktop-security-center/"
     requirements:
       tpm: true
-  - Desktop-Security-Center-Check-Key-Success:
+  Desktop-Security-Center-Check-Key-Success:
     entrypoint: "tests/desktop-security-center/"
     requirements:
       tpm: true
-  - Desktop-Security-Center-Check-Key-Failure:
+  Desktop-Security-Center-Check-Key-Failure:
     entrypoint: "tests/desktop-security-center/"
     requirements:
       tpm: true
-  - Desktop-Security-Center-Replace-Recovery-Key:
+  Desktop-Security-Center-Replace-Recovery-Key:
     entrypoint: "tests/desktop-security-center/"
     requirements:
       tpm: true

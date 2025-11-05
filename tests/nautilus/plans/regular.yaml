@@ -1,0 +1,4 @@
+---
+tests:
+  Nautilus-Basic:
+    entrypoint: tests/nautilus

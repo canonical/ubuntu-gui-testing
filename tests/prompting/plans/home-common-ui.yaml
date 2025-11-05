@@ -1,0 +1,10 @@
+---
+tests:
+  Prompting-Home-GIMP:
+    entrypoint: "tests/prompting/"
+    requirements:
+      tpm: true
+  Prompting-Home-Shotwell:
+    entrypoint: "tests/prompting/"
+    requirements:
+      tpm: true

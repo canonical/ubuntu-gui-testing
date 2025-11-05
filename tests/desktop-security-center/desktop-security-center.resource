@@ -8,7 +8,7 @@ Library             String
 
 
 *** Variables ***
-${Y}                ${CURDIR}
+${Y}                        ${CURDIR}
 ${DEFAULT_RECOVERY_KEY}     27923-40354-64135-46675-37087-49770-10618-41883
 
 
@@ -19,11 +19,22 @@ Open Security Center
     Type String    desktop-security-center
     Keys Combo    Return
 
+Click Security Center Icon
+    [Documentation]    Opens the Security Center via clicking its icon
+    Move Pointer To ${Y}/generic/security-center-icon.png
+    EzClick
+
 Open Disk Encryption Tab
     [Documentation]    Opens the Disk Encryption Tab in the Security Center
     Move Pointer To ${Y}/generic/disk-icon.png
     EzClick
     Match    ${Y}/generic/disk-icon-selected.png
+
+Open Camera Snaps Page
+    [Documentation]    Opens the camera interface snaps page on the App Permissions page
+    Move Pointer To ${Y}/generic/camera-icon.png
+    EzClick
+    Match Text    "Allow apps to access your cameras."
 
 Check Recovery Key Success
     [Documentation]    Check a valid recovery key in the Security Center

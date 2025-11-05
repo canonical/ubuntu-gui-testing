@@ -2,3 +2,5 @@
 tests:
   Prompting-Home-Curl:
     entrypoint: "tests/prompting/"
+  Prompting-Home-Docker:
+    entrypoint: "tests/prompting/"

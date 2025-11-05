@@ -119,7 +119,7 @@ Here's an example of what a `$plan.yaml` should look like (you can also see exam
 ```
 ---
 tests:
-  - Application-1-Basic:
+  Application-1-Basic:
     entrypoint: tests/application-1/
 ```
 
@@ -190,7 +190,7 @@ There is also an optional section per test case, `requirements`. Usage of that i
 ```
 ---
 tests:
-  - Tpm-Fde-With-Passphrase:
+  Tpm-Fde-With-Passphrase:
     entrypoint: tests/desktop-installer/
     requirements:
       tpm: true

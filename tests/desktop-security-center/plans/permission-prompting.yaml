@@ -1,0 +1,4 @@
+---
+tests:
+  Desktop-Security-Center-Camera-Permissions-Lifecycle:
+    entrypoint: tests/desktop-security-center

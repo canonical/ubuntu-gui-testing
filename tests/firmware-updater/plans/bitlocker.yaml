@@ -1,10 +1,10 @@
 ---
 tests:
-  - Firmware-Updater-Bitlocker-Dbx:
+  Firmware-Updater-Bitlocker-Dbx:
     entrypoint: "tests/firmware-updater/"
     requirements:
       tpm: true
-  - Firmware-Updater-Bitlocker-Ca:
+  Firmware-Updater-Bitlocker-Ca:
     entrypoint: "tests/firmware-updater/"
     requirements:
       tpm: true

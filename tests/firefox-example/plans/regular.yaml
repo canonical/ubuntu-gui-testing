@@ -1,3 +1,4 @@
 ---
-robot_files:
-    - "tests/firefox-example/firefox-example-basic/firefox-example-basic.robot"
+tests:
+  Firefox-Example-Basic:
+    entrypoint: tests/firefox-example/

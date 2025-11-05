@@ -1,3 +1,6 @@
 ---
-robot_files:
-  - "tests/prompting/prompting-home-firefox-download-single/prompting-home-firefox-download-single.robot"
+tests:
+  Prompting-Home-Firefox-Download-Single:
+    entrypoint: tests/prompting/
+    requirements:
+      tpm: true

@@ -1,14 +1,14 @@
 ---
 tests:
-  - Firmware-Updater-Tpm-Fde-Fake-Webcam:
+  Firmware-Updater-Tpm-Fde-Fake-Webcam:
     entrypoint: "tests/firmware-updater/"
     requirements:
       tpm: true
-  - Firmware-Updater-Tpm-Fde-Dbx:
+  Firmware-Updater-Tpm-Fde-Dbx:
     entrypoint: "tests/firmware-updater/"
     requirements:
       tpm: true
-  - Firmware-Updater-Tpm-Fde-Ca:
+  Firmware-Updater-Tpm-Fde-Ca:
     entrypoint: "tests/firmware-updater/"
     requirements:
       tpm: true

@@ -20,6 +20,16 @@ Enable Prompting
     Match    ${Y}/generic/prompting-toggle-enabled.png    60
     Close Current Window
 
+Get System Version
+    [Documentation]    Get ubuntu version number
+    Open Terminal
+    Run Command In Terminal    grep VERSION_ID /etc/os-release | cut -d'"' -f2
+    ${text}=    Read Text
+    ${matches}=    Get Regexp Matches    ${text}    [0-9]{2}\\.[0-9]{2}
+    ${release}=    Get From List    ${matches}    0
+    Close Current Window
+    RETURN    ${release}
+
 Handle PolKit Prompt
     [Documentation]    Handle a PolKit prompt
     Match Text    Authentication Required
@@ -38,6 +48,15 @@ Open Thunderbird
     Match Text    Downloads/thunderbird.tmp
     Reply To Simple Prompt    thunderbird wants to get write access    ${reply}
     Match Text    Account Setup
+
+Open Gimp
+    [Documentation]    Open gimp
+    Start Application    gimp
+    Match Text    Welcome to GIMP    60
+    Click LEFT Button On Welcome to GIMP
+    BuiltIn.Sleep    1
+    Close Current Window    # Close the welcome window
+    Match Text    GNU Image Manipulation Program
 
 Open Firefox Tab
     [Documentation]    Open a new tab in Firefox, navigate to the given URL and match the title of the website
@@ -126,3 +145,65 @@ Cheese No Device
 Cheese With Video
     [Documentation]    Find "cheese" application open with fake test video
     Match    ${Y}/generic/camera/cheese_with_video.png    30
+
+Open Image With Gimp From Nautilus
+    [Documentation]    Open and image file with GIMP from the file manager and handle the prompt
+    [Arguments]    ${reply}
+    Click RIGHT Button On TESTIMAGE
+    BuiltIn.Sleep    1
+    Click LEFT Button On 'Open with...'
+    BuiltIn.Sleep    1
+    Click LEFT Button On GNU Image Manipulation
+    BuiltIn.Sleep    1
+    Keys Combo    Return
+    IF    $reply == 'Deny once'
+        Reply To Simple Prompt    gimp wants to get read access    ${reply}
+        Reply To Simple Prompt    gimp wants to get read access    ${reply}
+        Reply To Simple Prompt    gimp wants to get read access    ${reply}
+        Match Text    GIMP Message
+        Match Text    Permission denied
+        Keys Combo    Return
+    ELSE
+        Reply To Simple Prompt    gimp wants to get read access    ${reply}
+    END
+    Click LEFT Button On Welcome to GIMP
+    BuiltIn.Sleep    3
+    Close Current Window    # close GIMP welcome screen
+    BuiltIn.Sleep    3
+
+Save Gimp Image In Pictures Directory
+    [Documentation]    Save the opened test file in the Pictures directory and answer all prompts
+    [Arguments]    ${reply}
+    Keys Combo    Control_L    s
+    Reply To Simple Prompt    gimp wants to get read access to your Home folder    ${reply}
+    IF    $reply == 'Deny once'
+        Reply To Simple Prompt    gimp wants to get read access to your Home folder    ${reply}
+        Match Text    Permission denied
+        Keys Combo    Return
+    END
+    BuiltIn.Sleep    1
+    Click LEFT Button On Pictures
+    BuiltIn.Sleep    1
+    # Keys Combo    Return
+    Reply To Simple Prompt    gimp wants to get read access to the Pictures folder    ${reply}
+    IF    $reply == 'Deny once'
+        Reply To Simple Prompt    gimp wants to get read access to the Pictures folder    ${reply}
+        Match Text    Permission denied
+        Keys Combo    Return
+    END
+    BuiltIn.Sleep    1
+    Keys Combo    Return
+    Reply To Simple Prompt    gimp wants to get write access to TESTIMAGE.xcf    ${reply}
+    IF    $reply == 'Deny once'
+        Reply To Simple Prompt    gimp wants to get read access to the Pictures folder    ${reply}
+        Match Text    Permission denied
+        Keys Combo    Return
+        Match Text    GIMP Message
+        Match Text    Error creating '/home/ubuntu/Pictures/TESTIMAGE.xcf'
+        Click LEFT Button On GIMP Message
+        BuiltIn.Sleep    1
+        Keys Combo    Return
+        BuiltIn.Sleep    1
+        Close Current Window
+    END
+    BuiltIn.Sleep    3

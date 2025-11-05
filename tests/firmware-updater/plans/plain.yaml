@@ -1,10 +1,10 @@
 ---
 tests:
-  - Firmware-Updater-Dbx:
+  Firmware-Updater-Dbx:
     entrypoint: "tests/firmware-updater/"
     requirements:
       tpm: true
-  - Firmware-Updater-Ca:
+  Firmware-Updater-Ca:
     entrypoint: "tests/firmware-updater/"
     requirements:
       tpm: true
