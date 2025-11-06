@@ -200,3 +200,5 @@ This is an example of a desktop installer test case that utilises TPM FDE capabi
 
 `tpm` obviously defaults to `false`. The set of requirements options will be documented later on, when `GUTS` is more mature.
 
+For more information about `GUTS`, please see the [repo](https://github.com/canonical/gui-ubuntu-testing-system).
+
