@@ -1,12 +1,8 @@
 *** Settings ***
-Documentation         Do an entire disk installation with zfs
+Documentation         Normal, entire disk install
 Resource        kvm.resource
 Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-word
 Resource    ${CURDIR}/../../installer.resource
-
-
-*** Variables ***
-${T}    ${CURDIR}
 
 
 *** Test Cases ***
@@ -56,24 +52,15 @@ Proprietary Software
 
 Select Erase Disk and Reinstall
     [Documentation]         Select erase disk and reinstall
-    # TODO: modify this to just move to text, or something
-    Match    ${T}/../../generic/disk-setup.png    180
-    ${erase_unselected}=               Run Keyword And Return Status
-    ...                     Match    ${T}/../../generic/erase-and-reinstall-unselected.png    120
-    IF    ${erase_unselected}
-        Move Pointer To ${T}/../../generic/erase-and-reinstall-unselected.png
-        EzClick
-    END
-    Move Pointer To ${T}/../../generic/next.png
-    EzClick
+    Select Erase Disk and Reinstall
 
 Choose Where to Install Ubuntu
     [Documentation]         Go through slide showing various disks, if present
     Choose Where to Install Ubuntu
 
-Encryption And File System Zfs No Encryption
-    [Documentation]         Select zfs encryption from the encryption menu
-    Encryption And File System Zfs No Encryption
+Encryption And File System No Encryption
+    [Documentation]         Select no encryption
+    Encryption And File System No Encryption
 
 Create Account
     [Documentation]         Create a user on the installed system
@@ -92,7 +79,7 @@ Wait For Install To Finish
     Wait For Install To Finish
 
 Wait For Reboot To Finish
-    [Documentation]         Wait for the reboot to finish
+    [Documentation]         Wait for the reboot post-install
     Wait For Reboot To Finish
 
 Wait For GIS Popup

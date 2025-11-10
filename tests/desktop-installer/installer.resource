@@ -12,26 +12,72 @@ ${T}    ${CURDIR}
 
 
 *** Keywords ***
+Restart Stream And Wait For Passphrase Entry
+    [Documentation]     Restarts stream (to help with rebooting testbed) and waits for passphrase input
+    # 1800 seconds wait time
+    FOR    ${_}    IN RANGE    120
+        Restart Video Input
+        ${match}                Run Keyword And Return Status
+        ...                     Match Text      passphrase      10
+        IF    ${match}    BREAK
+        ${match}                Run Keyword And Return Status
+        ...                     Match Text      unlock disk      10
+        IF    ${match}    BREAK
+    END
+    IF    !${match}    Fail    No match found
+
+Restart Stream And Wait For Unlock Disk
+    [Documentation]     Restarts stream (to help with rebooting testbed) and waits for unlock disk dialogue
+    # 1800 seconds wait time
+    FOR    ${_}    IN RANGE    20
+        # let's try without this.
+        # Restart Video Input
+        ${match}                Run Keyword And Return Status
+        ...                     Match Text      unlock disk      10
+        IF    ${match}    BREAK
+        ${match}                Run Keyword And Return Status
+        ...                     Match Text      passphrase      10
+        IF    ${match}    BREAK
+    END
+    # Print the read text here for debugging purposes.
+    Read Text
+    IF    !${match}    Fail    No match found
+
 Grub Menu
-    [Documentation]         Enter grub menu, if it in fact is present
+    [Documentation]     Boot live ISO from grub menu
     ${match}                Run Keyword And Return Status
     ...                     Match Text       GRUB      150
+    ${ret}      Create List    KP_Enter
+    ${down}       Create List       KP_Down
+    ${up}       Create List       KP_Up
     IF       ${match}
         # If we are in the GRUB menu, let's press enter
         # on VM testing, we have GRUB menu, on HW testing, we do
         # not.
-        ${ret}     Create List    KP_Enter
-        FOR    ${_}    IN RANGE    5
+        FOR    ${_}    IN RANGE    30
             ${match}    Run Keyword And Return Status
-            ...         Match Text    GRUB     10
-            IF    not ${match}       BREAK
+            ...         Match Text    GRUB     5
+            IF    !${match}       BREAK
+            Keys Combo     ${down}
+            BuiltIn.Sleep    1
+            Keys Combo     ${up}
+            BuiltIn.Sleep    1
             Keys Combo     ${ret}
+            BuiltIn.Sleep    1
         END
     ELSE
         # not matched? we assume we are at the first slide.
         # Let's double check that, though.
         Match Text    Choose your language     45
     END
+
+Select Erase Disk and Reinstall
+    [Documentation]    Erase the entire disk and reinstall
+    Match Text      Disk setup      300
+    Move Pointer To "Erase disk and install Ubuntu"
+    EzClick
+    Move Pointer To ${T}/generic/next.png
+    EzClick
 
 Ensure Not Unfocused After Boot
     [Documentation]         Workaround LP: #2112383
@@ -135,7 +181,7 @@ Encryption And File System Zfs Encryption
     ${matches}      Match Text        Encrypt with a passphrase using ZFS       20
     # for some reason, this indexing seems to differ from interactive terminal to in this resource file?
     # an extra [0]? weird, keep an eye on it. Will be solved by yarf PR anyway
-    Move Pointer To Absolute    ${matches[0][0]['region'].left}      ${matches[0][0]['region'].top}
+    Move Pointer To (${matches[0][0]['region'].left}, ${matches[0][0]['region'].top})
     # Move Pointer To ${T}/generic/encryption-and-file-system-show-advanced-zfs-encryption.png
     EzClick
     Move Pointer To ${T}/generic/next.png
@@ -220,9 +266,11 @@ Review Installation
 
 Wait For Install To Finish
     [Documentation]    Install finished slide
-    Match Text     Restart now      1800
-    Move Pointer To ${T}/generic/restart-button.png
-    EzClick
+    # Match Text      Restart Now     1800
+    BuiltIn.Sleep       60
+    Match Text      Installation Complete       1800
+    Move Pointer To "Restart now"
+    Click LEFT Button
 
 Wait For ZFS Encrypted Reboot To Finish
     [Documentation]    Waits for an encrypted reboot to finish, enters passphrase, and logs in
@@ -354,7 +402,7 @@ Wait For LVM Encrypted Reboot To Finish
     Match Text       Please remove        120
     Keys Combo    ${combo}
 
-    Restart Stream And Wait For Unlock Disk
+    Restart Stream And Wait For Passphrase Entry
 
     Type String    ubuntu
     ${combo}    Create List    Return
@@ -399,7 +447,7 @@ Encryption And File System Tpm Encryption
 
 Encryption PIN Or Passphrase Use PIN
     [Documentation]         Choose pin authentication method for tpm encryption
-    Match Text       Encryption PIN or passphrase       30
+    Match Text       Encryption       30
     Move Pointer To "Require a PIN"
     EzClick
     Move Pointer To ${T}/generic/next.png
@@ -421,24 +469,36 @@ Encryption PIN Slide
     EzClick
 
 Wait For TPM Install To Finish
-    [Documentation]         Wait for the TPM install to finish and show the recovery key slide
+    [Documentation]    Waits for recovery key slide after TPM installation finishes
     Match Text     Show QR code     1800
     BuiltIn.Sleep       5
-    ${text}      Read Text
+    Move Pointer To "Show QR code"
+    EzClick
+    Match Text      Scan the QR code
+
+    VAR     ${RECOVERY_KEY}    ""      scope=SUITE
+
+    FOR       ${_}      IN RANGE      30
+      ${text}       Read Text
+      Log
+      ...                     Text read on QR code screen is: ${text}
+      ...                     html=true
+      ...                     console=true
+      ${matches}     Get Regexp Matches    ${text}      [0-9]{5}(-|- | -)[0-9]{5}(-|- | -)[0-9]{5}(-|- | -)[0-9]{5}(-|- | -)[0-9]{5}(-|- | -)[0-9]{5}(-|- | -)[0-9]{5}(-|- | -)[0-9]{5}
+      ${num_matches}        Get Length      ${matches}
+      IF      ${num_matches} > 0
+        VAR     ${RECOVERY_KEY}    ${matches}[0]     scope=SUITE
+        BREAK
+      END
+      BuiltIn.Sleep     3
+    END
 
     Log
-    ...                     Text read on recovery key screen is: ${text}
+    ...                     Recovery parsed as: ${RECOVERY_KEY}
     ...                     html=true
     ...                     console=true
+    Create File         ${RECOVERY_KEY_PATH}        ${RECOVERY_KEY}
 
-    ${recovery_key}        Get Line      ${text}       -6
-
-    Log
-    ...                     Recovery parsed as: ${recovery_key}
-    ...                     html=true
-    ...                     console=true
-
-    Create File         ${RECOVERY_KEY_PATH}        ${recovery_key}
     Keys Combo      Escape
     Move Pointer To "I saved my"
     EzClick
@@ -446,7 +506,7 @@ Wait For TPM Install To Finish
     EzClick
     Move Pointer To "Restart now"
     EzClick
-    RETURN            ${recovery_key}
+    RETURN            ${RECOVERY_KEY}
 
 Wait For TPM Encrypted Reboot To Finish With Pin
     [Documentation]    Waits for an encrypted reboot to finish, enters passphrase, and logs in
@@ -486,7 +546,7 @@ Encryption And File System Lvm Encryption
 
 Encryption PIN Or Passphrase Use Neither
     [Documentation]         Choose no authentication method for tpm encryption
-    Match Text       Encryption PIN or passphrase       30
+    Match Text       Encryption       30
     Match       ${T}/generic/encryption-pin-or-passphrase-unlock-automatically.png    10
     Move Pointer To ${T}/generic/next.png
     EzClick
@@ -500,7 +560,7 @@ Encryption And File System No Encryption
 
 Encryption PIN Or Passphrase Use Passphrase
     [Documentation]         Choose to use a passphrase
-    Match Text       Encryption PIN or passphrase       30
+    Match Text       Encryption       30
     Move Pointer To "Require a passphrase"
     EzClick
     Move Pointer To ${T}/generic/next.png
@@ -559,13 +619,17 @@ Wait For TPM Encrypted Reboot To Finish
 
 Reboot And Use Recovery Key Instead Of Passphrase
     [Documentation]         Reboot from desktop environment and use recovery key instead of passphrase
-    [Arguments]       ${recovery_key}
+    [Arguments]       ${RECOVERY_KEY}
     Log
-    ...                     Recovery key passed as: ${recovery_key}
+    ...                     Recovery key passed as: ${RECOVERY_KEY}
     ...                     html=true
     ...                     console=true
 
-    Reboot Via Terminal
+    # Because of snap seeding issues, we need to wait for the firefox
+    # icon. Let's be safe and wait five minutes.
+    # LP: #2116949
+    Match    ${T}/generic/firefox-icon.png    300
+    Reboot Via Terminal Questing
     Restart Stream And Wait For Passphrase Entry
     BuiltIn.Sleep       10
     ${combo}    Create List    Return
@@ -575,10 +639,10 @@ Reboot And Use Recovery Key Instead Of Passphrase
     BuiltIn.Sleep       2
     Keys Combo    ${combo}
     BuiltIn.Sleep       10        # hack
-    Type String       ${recovery_key}
+    Type String       ${RECOVERY_KEY.strip()}
     BuiltIn.Sleep       2
     Keys Combo    ${combo}
-    Match Text        Not listed       300
+    Match Text        Not listed       600
     ${combo}    Create List    Return
     Keys Combo    ${combo}
     BuiltIn.Sleep     5

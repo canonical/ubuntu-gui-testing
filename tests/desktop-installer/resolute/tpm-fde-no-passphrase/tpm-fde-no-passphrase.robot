@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation         Encrypted zfs installation
+Documentation         TPM FDE installation with no pin or passphrase
 Resource        kvm.resource
 Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-word
 Resource    ${CURDIR}/../../installer.resource
@@ -56,28 +56,19 @@ Proprietary Software
 
 Select Erase Disk and Reinstall
     [Documentation]         Select erase disk and reinstall
-    # TODO: modify this to just move to text, or something
-    Match    ${T}/../../generic/disk-setup.png    180
-    ${erase_unselected}=               Run Keyword And Return Status
-    ...                     Match    ${T}/../../generic/erase-and-reinstall-unselected.png    120
-    IF    ${erase_unselected}
-        Move Pointer To ${T}/../../generic/erase-and-reinstall-unselected.png
-        EzClick
-    END
-    Move Pointer To ${T}/../../generic/next.png
-    EzClick
+    Select Erase Disk and Reinstall
 
 Choose Where to Install Ubuntu
     [Documentation]         Go through slide showing various disks, if present
     Choose Where to Install Ubuntu
 
-Encryption And File System Zfs Encryption
-    [Documentation]         Select zfs encryption from the encryption menu
-    Encryption And File System Zfs Encryption
+Encryption And File System Tpm Encryption
+    [Documentation]         Select tpm encryption from the encryption menu
+    Encryption And File System Tpm Encryption
 
-Disk Passphrase Setup Questing Onwards
-    [Documentation]         Set up a passphrase for the zfs encrypted volumes
-    Disk Passphrase Setup Questing Onwards
+Encryption PIN Or Passphrase Use Neither
+    [Documentation]         Choose to use no authentication for the TPM
+    Encryption PIN Or Passphrase Use Neither
 
 Create Account
     [Documentation]         Create a user on the installed system
@@ -91,18 +82,24 @@ Review Installation
     [Documentation]         Review installation slide
     Review Installation
 
-Wait For Install To Finish
+Wait For TPM Install To Finish
     [Documentation]         Wait for the installation to finish
-    Wait For Install To Finish
+    Wait For TPM Install To Finish
 
-Wait For ZFS Encrypted Reboot To Finish
-    [Documentation]         Wait for the post-install reboot to finish, and enter passphrase on reboot
-    Wait For ZFS Encrypted Reboot To Finish
+Wait For Reboot To Finish
+    [Documentation]         Wait for the post-install reboot to finish
+    Wait For Reboot To Finish
 
 Wait For GIS Popup
     [Documentation]         Wait for the gnome-initial-setup popup
     Wait For GIS Popup
 
-# Install OpenSSHServer
-#     [Documentation]         Install openssh-server to collect logs
-#     Install OpenSSHServer
+Open Firmware Updater
+    [Documentation]         Make sure the firmware-updater snap opens
+    BuiltIn.Sleep       45
+    Match    ${T}/generic/firefox-icon.png    120
+    Start Application           firmware-updater
+    Match Text          Firmware Updater       90
+    ${cnf}=               Run Keyword And Return Status
+    ...                     Match Text        Command not found      10
+    IF    ${cnf}        Fail        firmware-updater command not found

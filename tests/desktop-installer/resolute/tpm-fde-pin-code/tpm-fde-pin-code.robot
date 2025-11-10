@@ -1,12 +1,8 @@
 *** Settings ***
-Documentation         Perform an LVM+encryption installation
+Documentation         Do a TPM FDE (pin code) installation
 Resource        kvm.resource
 Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-word
 Resource    ${CURDIR}/../../installer.resource
-
-
-*** Variables ***
-${T}    ${CURDIR}
 
 
 *** Test Cases ***
@@ -55,29 +51,24 @@ Proprietary Software
     Proprietary Software
 
 Select Erase Disk and Reinstall
-    [Documentation]         Go through proprietary software slide
-    # TODO: modify this to just move to text, or something
-    Match    ${T}/../../generic/disk-setup.png    180
-    ${erase_unselected}=               Run Keyword And Return Status
-    ...                     Match    ${T}/../../generic/erase-and-reinstall-unselected.png    120
-    IF    ${erase_unselected}
-        Move Pointer To ${T}/../../generic/erase-and-reinstall-unselected.png
-        EzClick
-    END
-    Move Pointer To ${T}/../../generic/next.png
-    EzClick
+    [Documentation]         Select erase disk and reinstall
+    Select Erase Disk and Reinstall
 
 Choose Where to Install Ubuntu
     [Documentation]         Go through slide showing various disks, if present
     Choose Where to Install Ubuntu
 
-Encryption And File System Lvm Encryption
-    [Documentation]         Select lvm and encryption from the encryption menu
-    Encryption And File System Lvm Encryption
+Encryption And File System Tpm Encryption
+    [Documentation]         Select tpm encryption from the encryption menu
+    Encryption And File System Tpm Encryption
 
-Disk Passphrase Setup Questing Onwards
-    [Documentation]         Set up a passphrase for encrypted lvm volumes
-    Disk Passphrase Setup Questing Onwards
+Encryption PIN Or Passphrase Use PIN
+    [Documentation]         Choose to use pin authentication for the TPM
+    Encryption PIN Or Passphrase Use PIN
+
+Encryption PIN Slide
+    [Documentation]         Choose a pin for authentication
+    Encryption PIN Slide
 
 Create Account
     [Documentation]         Create a user on the installed system
@@ -91,13 +82,13 @@ Review Installation
     [Documentation]         Review installation slide
     Review Installation
 
-Wait For Install To Finish
+Wait For TPM Install To Finish
     [Documentation]         Wait for the installation to finish
-    Wait For Install To Finish
+    Wait For TPM Install To Finish
 
-Wait For LVM Encrypted Reboot To Finish
-    [Documentation]         Wait for the post-install reboot to finish
-    Wait For LVM Encrypted Reboot To Finish
+Wait For TPM Encrypted Reboot To Finish With Pin
+    [Documentation]         Wait for the post-install reboot to finish, and enter pin code on reboot
+    Wait For TPM Encrypted Reboot To Finish With Pin
 
 Wait For GIS Popup
     [Documentation]         Wait for the gnome-initial-setup popup
