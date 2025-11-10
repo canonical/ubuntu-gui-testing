@@ -1,12 +1,8 @@
 *** Settings ***
-Documentation         Do a TPM FDE (pin code) installation
+Documentation         Encrypted zfs installation
 Resource        kvm.resource
 Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-word
 Resource    ${CURDIR}/../../installer.resource
-
-
-*** Variables ***
-${T}    ${CURDIR}
 
 
 *** Test Cases ***
@@ -56,33 +52,19 @@ Proprietary Software
 
 Select Erase Disk and Reinstall
     [Documentation]         Select erase disk and reinstall
-    # TODO: modify this to just move to text, or something
-    Match    ${T}/../../generic/disk-setup.png    120
-    ${erase_unselected}=               Run Keyword And Return Status
-    ...                     Match    ${T}/../../generic/erase-and-reinstall-unselected.png    120
-    IF    ${erase_unselected}
-        Move Pointer To ${T}/../../generic/erase-and-reinstall-unselected.png
-        EzClick
-    END
-    Match    ${T}/../../generic/erase-and-reinstall-selected.png    120
-    Move Pointer To ${T}/../../generic/next.png
-    EzClick
+    Select Erase Disk and Reinstall
 
 Choose Where to Install Ubuntu
     [Documentation]         Go through slide showing various disks, if present
     Choose Where to Install Ubuntu
 
-Encryption And File System Tpm Encryption
-    [Documentation]         Select tpm encryption from the encryption menu
-    Encryption And File System Tpm Encryption
+Encryption And File System Zfs Encryption
+    [Documentation]         Select zfs encryption from the encryption menu
+    Encryption And File System Zfs Encryption
 
-Encryption PIN Or Passphrase Use PIN
-    [Documentation]         Choose to use pin authentication for the TPM
-    Encryption PIN Or Passphrase Use PIN
-
-Encryption PIN Slide
-    [Documentation]         Choose a pin for authentication
-    Encryption PIN Slide
+Disk Passphrase Setup Questing Onwards
+    [Documentation]         Set up a passphrase for the zfs encrypted volumes
+    Disk Passphrase Setup Questing Onwards
 
 Create Account
     [Documentation]         Create a user on the installed system
@@ -96,13 +78,13 @@ Review Installation
     [Documentation]         Review installation slide
     Review Installation
 
-Wait For TPM Install To Finish
+Wait For Install To Finish
     [Documentation]         Wait for the installation to finish
-    Wait For TPM Install To Finish
+    Wait For Install To Finish
 
-Wait For TPM Encrypted Reboot To Finish With Pin
-    [Documentation]         Wait for the post-install reboot to finish, and enter pin code on reboot
-    Wait For TPM Encrypted Reboot To Finish With Pin
+Wait For ZFS Encrypted Reboot To Finish
+    [Documentation]         Wait for the post-install reboot to finish, and enter passphrase on reboot
+    Wait For ZFS Encrypted Reboot To Finish
 
 Wait For GIS Popup
     [Documentation]         Wait for the gnome-initial-setup popup

@@ -7,5 +7,6 @@ ignore = [
     "line-too-long",
     "too-long-keyword",
     "file-too-long",
-    "too-many-calls-in-keyword"
+    "too-many-calls-in-keyword",
+    "no-suite-variable"
 ]
