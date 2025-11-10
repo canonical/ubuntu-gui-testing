@@ -339,6 +339,14 @@ Wait For Reboot To Finish
     Move Pointer To ${T}/generic/login-prompt.png
     EzClick
 
+    Keys Combo    ${combo}
+    BuiltIn.Sleep     5
+    Type String    ubuntu
+    Keys Combo    ${combo}
+    Match Text      Welcome to Ubuntu     360
+    Move Pointer To (300, 300)
+    EzClick
+
 Entire Disk With ZFS Plus Encryption
     [Documentation]    This slide assumes the disk is empty
     Match    ${T}/generic/disk-setup.png    180
