@@ -24,7 +24,7 @@ Restart Stream And Wait For Passphrase Entry
         ...                     Match Text      unlock disk      10
         IF    ${match}    BREAK
     END
-    IF    !${match}    Fail    No match found
+    IF    not ${match}    Fail    No match found
 
 Restart Stream And Wait For Unlock Disk
     [Documentation]     Restarts stream (to help with rebooting testbed) and waits for unlock disk dialogue
@@ -41,7 +41,7 @@ Restart Stream And Wait For Unlock Disk
     END
     # Print the read text here for debugging purposes.
     Read Text
-    IF    !${match}    Fail    No match found
+    IF    not ${match}    Fail    No match found
 
 Grub Menu
     [Documentation]     Boot live ISO from grub menu
@@ -57,7 +57,7 @@ Grub Menu
         FOR    ${_}    IN RANGE    30
             ${match}    Run Keyword And Return Status
             ...         Match Text    GRUB     5
-            IF    !${match}       BREAK
+            IF    not ${match}    BREAK
             Keys Combo     ${down}
             BuiltIn.Sleep    1
             Keys Combo     ${up}
@@ -339,6 +339,14 @@ Wait For Reboot To Finish
     Move Pointer To ${T}/generic/login-prompt.png
     EzClick
 
+    Keys Combo    ${combo}
+    BuiltIn.Sleep     5
+    Type String    ubuntu
+    Keys Combo    ${combo}
+    Match Text      Welcome to Ubuntu     360
+    Move Pointer To (300, 300)
+    EzClick
+
 Entire Disk With ZFS Plus Encryption
     [Documentation]    This slide assumes the disk is empty
     Match    ${T}/generic/disk-setup.png    180
@@ -347,11 +355,11 @@ Entire Disk With ZFS Plus Encryption
     # Match    ${T}/generic/entire-disk.png    20
     Move Pointer To ${T}/generic/advanced-features.png
     EzClick
-    Move Pointer To ${T}/erase-disk-use-zfs-plus-encryption.png
+    Move Pointer To ${T}/generic/erase-disk-use-zfs-plus-encryption.png
     EzClick
     Move Pointer To ${T}/generic/advanced-features-ok.png
     EzClick
-    Match    ${T}/check-zfs-plus-encryption-selected.png    20
+    Match    ${T}/generic/check-zfs-plus-encryption-selected.png    20
     Move Pointer To ${T}/generic/next.png
     EzClick
 
@@ -388,11 +396,11 @@ Entire Disk With LVM Plus Encryption
     # Match    ${T}/generic/entire-disk.png    20
     Move Pointer To ${T}/generic/advanced-features.png
     EzClick
-    Move Pointer To ${T}/erase-disk-use-lvm-plus-encryption.png
+    Move Pointer To ${T}/generic/erase-disk-use-lvm-plus-encryption.png
     EzClick
     Move Pointer To ${T}/generic/advanced-features-ok.png
     EzClick
-    Match    ${T}/check-lvm-plus-encryption-selected.png    20
+    Match    ${T}/generic/check-lvm-plus-encryption-selected.png    20
     Move Pointer To ${T}/generic/next.png
     EzClick
 
@@ -497,7 +505,6 @@ Wait For TPM Install To Finish
     ...                     Recovery parsed as: ${RECOVERY_KEY}
     ...                     html=true
     ...                     console=true
-    Create File         ${RECOVERY_KEY_PATH}        ${RECOVERY_KEY}
 
     Keys Combo      Escape
     Move Pointer To "I saved my"
@@ -664,3 +671,13 @@ Encryption And File System Zfs No Encryption
     Match    ${T}/generic/encryption-and-file-system-show-advanced-zfs-selected.png    20
     Move Pointer To ${T}/generic/next.png
     EzClick
+
+Open Firmware Updater
+    [Documentation]     Opens the firmware updater
+    BuiltIn.Sleep       45
+    Match    ${T}/generic/firefox-icon.png    120
+    Start Application           firmware-updater
+    Match Text          Firmware Updater       90
+    ${cnf}                Run Keyword And Return Status
+    ...                     Match Text        Command not found      10
+    IF    ${cnf}        Fail        firmware-updater command not found

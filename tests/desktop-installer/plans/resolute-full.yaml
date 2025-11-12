@@ -1,0 +1,16 @@
+---
+tests:
+  Resolute.Entire-Disk:
+    entrypoint: "tests/desktop-installer/"
+  Resolute.Entire-Disk-With-Lvm-And-Encryption:
+    entrypoint: "tests/desktop-installer/"
+  Resolute.Entire-Disk-With-Zfs:
+    entrypoint: "tests/desktop-installer/"
+  Resolute.Entire-Disk-With-Zfs-Plus-Encryption:
+    entrypoint: "tests/desktop-installer/"
+  Resolute.Tpm-Fde-No-Passphrase:
+    entrypoint: "tests/desktop-installer/"
+  Resolute.Tpm-Fde-With-Passphrase:
+    entrypoint: "tests/desktop-installer/"
+  Resolute.Tpm-Fde-Not-Available:
+    entrypoint: "tests/desktop-installer/"
