@@ -355,11 +355,11 @@ Entire Disk With ZFS Plus Encryption
     # Match    ${T}/generic/entire-disk.png    20
     Move Pointer To ${T}/generic/advanced-features.png
     EzClick
-    Move Pointer To ${T}/erase-disk-use-zfs-plus-encryption.png
+    Move Pointer To ${T}/generic/erase-disk-use-zfs-plus-encryption.png
     EzClick
     Move Pointer To ${T}/generic/advanced-features-ok.png
     EzClick
-    Match    ${T}/check-zfs-plus-encryption-selected.png    20
+    Match    ${T}/generic/check-zfs-plus-encryption-selected.png    20
     Move Pointer To ${T}/generic/next.png
     EzClick
 
@@ -396,11 +396,11 @@ Entire Disk With LVM Plus Encryption
     # Match    ${T}/generic/entire-disk.png    20
     Move Pointer To ${T}/generic/advanced-features.png
     EzClick
-    Move Pointer To ${T}/erase-disk-use-lvm-plus-encryption.png
+    Move Pointer To ${T}/generic/erase-disk-use-lvm-plus-encryption.png
     EzClick
     Move Pointer To ${T}/generic/advanced-features-ok.png
     EzClick
-    Match    ${T}/check-lvm-plus-encryption-selected.png    20
+    Match    ${T}/generic/check-lvm-plus-encryption-selected.png    20
     Move Pointer To ${T}/generic/next.png
     EzClick
 
