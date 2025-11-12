@@ -1,0 +1,10 @@
+---
+tests:
+  Noble.Entire-Disk:
+    entrypoint: "tests/desktop-installer/"
+  Noble.Entire-Disk-With-Lvm-And-Encryption:
+    entrypoint: "tests/desktop-installer/"
+  Noble.Entire-Disk-With-Zfs:
+    entrypoint: "tests/desktop-installer/"
+  Noble.Entire-Disk-With-Zfs-Plus-Encryption:
+    entrypoint: "tests/desktop-installer/"

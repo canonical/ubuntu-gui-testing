@@ -1,0 +1,4 @@
+---
+tests:
+  Resolute.Entire-Disk:
+    entrypoint: "tests/desktop-installer/"

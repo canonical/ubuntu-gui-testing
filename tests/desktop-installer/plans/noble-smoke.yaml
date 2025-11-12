@@ -1,0 +1,4 @@
+---
+tests:
+  Noble.Entire-Disk:
+    entrypoint: "tests/desktop-installer/"
