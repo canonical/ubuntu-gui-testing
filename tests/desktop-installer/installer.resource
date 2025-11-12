@@ -24,7 +24,7 @@ Restart Stream And Wait For Passphrase Entry
         ...                     Match Text      unlock disk      10
         IF    ${match}    BREAK
     END
-    IF    !${match}    Fail    No match found
+    IF    not ${match}    Fail    No match found
 
 Restart Stream And Wait For Unlock Disk
     [Documentation]     Restarts stream (to help with rebooting testbed) and waits for unlock disk dialogue
@@ -41,7 +41,7 @@ Restart Stream And Wait For Unlock Disk
     END
     # Print the read text here for debugging purposes.
     Read Text
-    IF    !${match}    Fail    No match found
+    IF    not ${match}    Fail    No match found
 
 Grub Menu
     [Documentation]     Boot live ISO from grub menu
@@ -57,7 +57,7 @@ Grub Menu
         FOR    ${_}    IN RANGE    30
             ${match}    Run Keyword And Return Status
             ...         Match Text    GRUB     5
-            IF    !${match}       BREAK
+            IF    not ${match}    BREAK
             Keys Combo     ${down}
             BuiltIn.Sleep    1
             Keys Combo     ${up}
