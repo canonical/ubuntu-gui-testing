@@ -505,7 +505,6 @@ Wait For TPM Install To Finish
     ...                     Recovery parsed as: ${RECOVERY_KEY}
     ...                     html=true
     ...                     console=true
-    Create File         ${RECOVERY_KEY_PATH}        ${RECOVERY_KEY}
 
     Keys Combo      Escape
     Move Pointer To "I saved my"
