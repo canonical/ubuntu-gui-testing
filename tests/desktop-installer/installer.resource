@@ -672,3 +672,13 @@ Encryption And File System Zfs No Encryption
     Match    ${T}/generic/encryption-and-file-system-show-advanced-zfs-selected.png    20
     Move Pointer To ${T}/generic/next.png
     EzClick
+
+Open Firmware Updater
+    [Documentation]     Opens the firmware updater
+    BuiltIn.Sleep       45
+    Match    ${T}/generic/firefox-icon.png    120
+    Start Application           firmware-updater
+    Match Text          Firmware Updater       90
+    ${cnf}                Run Keyword And Return Status
+    ...                     Match Text        Command not found      10
+    IF    ${cnf}        Fail        firmware-updater command not found

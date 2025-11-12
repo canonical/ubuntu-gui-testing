@@ -5,10 +5,6 @@ Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-wo
 Resource    ${CURDIR}/../../installer.resource
 
 
-*** Variables ***
-${T}    ${CURDIR}
-
-
 *** Test Cases ***
 Grub Menu
     [Documentation]         Go through grub menu, if present
@@ -96,10 +92,4 @@ Wait For GIS Popup
 
 Open Firmware Updater
     [Documentation]         Make sure the firmware-updater snap opens
-    BuiltIn.Sleep       45
-    Match    ${T}/generic/firefox-icon.png    120
-    Start Application           firmware-updater
-    Match Text          Firmware Updater       90
-    ${cnf}=               Run Keyword And Return Status
-    ...                     Match Text        Command not found      10
-    IF    ${cnf}        Fail        firmware-updater command not found
+    Open Firmware Updater
