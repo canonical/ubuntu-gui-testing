@@ -636,7 +636,7 @@ Reboot And Use Recovery Key Instead Of Passphrase
     # icon. Let's be safe and wait five minutes.
     # LP: #2116949
     Match    ${T}/generic/firefox-icon.png    300
-    Reboot Via Terminal Questing
+    Reboot Via Terminal
     Restart Stream And Wait For Passphrase Entry
     BuiltIn.Sleep       10
     ${combo}    Create List    Return
@@ -681,3 +681,15 @@ Open Firmware Updater
     ${cnf}                Run Keyword And Return Status
     ...                     Match Text        Command not found      10
     IF    ${cnf}        Fail        firmware-updater command not found
+
+Reboot Via Terminal
+    [Documentation]    Run sudo reboot in a terminal
+    Open Terminal
+    Type String    sudo reboot
+    BuiltIn.Sleep    2    # hacky
+    ${enter}    Create List    Return
+    Keys Combo    ${enter}
+    Match Text    Password    15
+    Type String    ubuntu
+    BuiltIn.Sleep    2    # hacky
+    Keys Combo    ${enter}
