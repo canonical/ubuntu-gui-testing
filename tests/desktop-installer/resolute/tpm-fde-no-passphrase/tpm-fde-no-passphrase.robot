@@ -62,10 +62,6 @@ Encryption And File System Tpm Encryption
     [Documentation]         Select tpm encryption from the encryption menu
     Encryption And File System Tpm Encryption
 
-Encryption PIN Or Passphrase Use Neither
-    [Documentation]         Choose to use no authentication for the TPM
-    Encryption PIN Or Passphrase Use Neither
-
 Create Account
     [Documentation]         Create a user on the installed system
     Create Account
