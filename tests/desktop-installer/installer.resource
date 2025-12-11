@@ -9,6 +9,7 @@ Library         String
 
 *** Variables ***
 ${T}    ${CURDIR}
+${TPMFDE_PASSPHRASE}    ubuntuisthebestdistro1234
 
 
 *** Keywords ***
@@ -595,7 +596,7 @@ Encryption Passphrase Slide Test Entropy
         Keys Combo      ${tab}
         BuiltIn.Sleep     1
     END
-    Type String      ubuntuisthebestdistro1234
+    Type String      ${TPMFDE_PASSPHRASE}
     BuiltIn.Sleep     10
     Move Pointer To ${T}/generic/next.png
     EzClick
@@ -609,7 +610,7 @@ Wait For TPM Encrypted Reboot To Finish
 
     Restart Stream And Wait For Passphrase Entry
 
-    Type String    ubuntuisthebestdistro1234
+    Type String    ${TPMFDE_PASSPHRASE}
     ${combo}    Create List    Return
     Keys Combo    ${combo}
     Match Text        Not listed       300
