@@ -143,3 +143,10 @@ Check File Does Not Exist
 Close Current Window
     [Documentation]    Close the current window
     Keys Combo    Alt    F4
+
+Handle PolKit Prompt
+    [Documentation]    Handle a PolKit prompt
+    Match Text    Authentication Required
+    Type String    ubuntu
+    Keys Combo    Return
+

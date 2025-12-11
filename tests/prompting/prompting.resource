@@ -30,12 +30,6 @@ Get System Version
     Close Current Window
     RETURN    ${release}
 
-Handle PolKit Prompt
-    [Documentation]    Handle a PolKit prompt
-    Match Text    Authentication Required
-    Type String    ubuntu
-    Keys Combo    Return
-
 Open Firefox
     [Documentation]    Open Firefox
     Start Application    firefox
