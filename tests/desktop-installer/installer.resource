@@ -694,3 +694,26 @@ Reboot Via Terminal
     Type String    ubuntu
     BuiltIn.Sleep    2    # hacky
     Keys Combo    ${enter}
+
+Open Security Center
+    [Documentation]     Opens the security center
+    BuiltIn.Sleep       45
+    Match    ${T}/generic/firefox-icon.png    120
+    Start Application           desktop-security-center
+    Match Text          Security Center       90
+    ${cnf}                Run Keyword And Return Status
+    ...                     Match Text        Command not found      10
+    IF    ${cnf}        Fail        desktop-security-center command not found
+
+Set Passphrase In Security Center
+    [Documentation]     Set a TPM/FDE passphrase in the security center
+    Open Security Center
+    Click LEFT Button On Disk Encryption
+    Click LEFT Button On Add Passphrase
+    Click LEFT Button On New Passphrase
+    Type String     ${TPMFDE_PASSPHRASE}
+    Click LEFT Button On Confirm Passphrase
+    Type String     ${TPMFDE_PASSPHRASE}
+    Click LEFT Button On ${T}/generic/security-center-tpm-fde-passphrase-add-button.png
+    Handle PolKit Prompt
+    Close Current Window

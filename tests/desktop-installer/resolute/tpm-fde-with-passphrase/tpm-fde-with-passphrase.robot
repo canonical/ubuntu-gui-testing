@@ -66,14 +66,6 @@ Encryption And File System Tpm Encryption
     [Documentation]         Select tpm encryption from the encryption menu
     Encryption And File System Tpm Encryption
 
-Encryption PIN Or Passphrase Use Passphrase
-    [Documentation]         Choose to use passphrase authentication for the TPM
-    Encryption PIN Or Passphrase Use Passphrase
-
-Encryption Passphrase Slide Test Entropy
-    [Documentation]         Enter a passphrase on the passphrase slide and test the entropy dialogue
-    Encryption Passphrase Slide Test Entropy
-
 Create Account
     [Documentation]         Create a user on the installed system
     Create Account
@@ -95,13 +87,19 @@ Wait For TPM Install To Finish
     ...                     console=true
     VAR       ${RECOVERY_KEY}       ${recovery_key}       scope=GLOBAL  # robocop: off=no-global-variable
 
-Wait For TPM Encrypted Reboot To Finish
-    [Documentation]         Wait for the post-install reboot to finish, and enter passphrase on reboot
-    Wait For TPM Encrypted Reboot To Finish
+Wait For Reboot To Finish
+    [Documentation]         Wait for the post-install reboot to finish
+    Wait For Reboot To Finish
 
 Wait For GIS Popup
     [Documentation]         Wait for the gnome-initial-setup popup
     Wait For GIS Popup
+
+Set Passphrase In Security Center
+    [Documentation]     Set a TPM/FDE passphrase in the security center
+    Set Passphrase In Security Center
+
+# TODO: reboot and enter passphrase in plymouth
 
 Reboot And Use Recovery Key Instead Of Passphrase
     [Documentation]         Reboot again from the desktop environment and use the recovery key instead of the passphrase
