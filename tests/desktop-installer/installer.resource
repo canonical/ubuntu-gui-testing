@@ -301,7 +301,18 @@ Wait For GIS Popup
 
 Install OpenSSHServer
     [Documentation]         Install openssh-server
-    Install Debian Package      openssh-server
+    [Arguments]     ${livesession}=False
+    Install Debian Package      openssh-server  livesession=${livesession}
+
+Start sshd VSOCK socket
+    [Documentation]         Start sshd-vsock.socket
+    [Arguments]     ${livesession}=False
+    Open Terminal
+    IF    ${livesession}
+        Run Command In Terminal  sudo systemctl start sshd-vsock.socket
+    ELSE
+        Run Sudo Command In Terminal  sudo systemctl start sshd-vsock.socket
+    END
 
 Entire Disk With ZFS
     [Documentation]    This slide assumes the disk is empty
@@ -693,3 +704,30 @@ Reboot Via Terminal
     Type String    ubuntu
     BuiltIn.Sleep    2    # hacky
     Keys Combo    ${enter}
+
+Install Debian Package
+    [Documentation]    Install a debian package
+    [Arguments]    ${package}   ${livesession}=False
+    Open Terminal
+    IF  ${livesession}
+        Run Command In Terminal    sudo apt-get update -y
+    ELSE
+        Run Sudo Command In Terminal    sudo apt-get update -y
+    END
+    Run Command In Terminal    sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y ${package}
+    Close Terminal
+
+Set Live Session User Password
+    [Documentation]    Changes the password of a given user
+    [Arguments]    ${username}    ${password}
+    Open Terminal
+    Type String    sudo passwd ${username}
+    Keys Combo    Return
+    BuiltIn.Sleep    1
+    Type String    ${password}
+    Keys Combo    Return
+    BuiltIn.Sleep    1
+    Type String    ${password}
+    Keys Combo    Return
+    BuiltIn.Sleep    1
+    Close Terminal
