@@ -268,7 +268,7 @@ Wait For Install To Finish
     [Documentation]    Install finished slide
     # Match Text      Restart Now     1800
     BuiltIn.Sleep       60
-    Match Text      Installation Complete       1800
+    Match Text      Installation Complete       3600
     Move Pointer To "Restart now"
     Click LEFT Button
 
