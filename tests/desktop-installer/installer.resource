@@ -301,7 +301,15 @@ Wait For GIS Popup
 
 Install OpenSSHServer
     [Documentation]         Install openssh-server
-    Install Debian Package      openssh-server
+    [Arguments]     ${livesession}=False
+    Install Debian Package      openssh-server  livesession=${livesession}
+
+Start sshd VSOCK socket
+    [Documentation]         Start sshd-vsock.socket
+    [Arguments]     ${livesession}=False
+    Open Terminal
+    Run Sudo Command In Terminal With Context  sudo systemctl start sshd-vsock.socket   livesession=${livesession}
+    Close Terminal
 
 Entire Disk With ZFS
     [Documentation]    This slide assumes the disk is empty
@@ -693,3 +701,35 @@ Reboot Via Terminal
     Type String    ubuntu
     BuiltIn.Sleep    2    # hacky
     Keys Combo    ${enter}
+
+Install Debian Package
+    [Documentation]    Install a debian package
+    [Arguments]    ${package}   ${livesession}=False
+    Open Terminal
+    Run Sudo Command In Terminal With Context    sudo apt-get update -y     livesession=${livesession}
+    Run Command In Terminal    sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y ${package}
+    Close Terminal
+
+Run Sudo Command In Terminal With Context
+    [Documentation]     Runs a sudo command in a terminal. Ignores the password prompt in the live session.
+    [Arguments]    ${command}   ${livesession}=False
+    IF    ${livesession}
+        Run Command In Terminal  ${command}
+    ELSE
+        Run Sudo Command In Terminal  ${command}
+    END
+
+Set Live Session User Password
+    [Documentation]    Changes the password of a given user
+    [Arguments]    ${username}    ${password}
+    Open Terminal
+    Type String    sudo passwd ${username}
+    Keys Combo    Return
+    BuiltIn.Sleep    1
+    Type String    ${password}
+    Keys Combo    Return
+    BuiltIn.Sleep    1
+    Type String    ${password}
+    Keys Combo    Return
+    BuiltIn.Sleep    1
+    Close Terminal
