@@ -9,6 +9,7 @@ Library         String
 
 *** Variables ***
 ${T}    ${CURDIR}
+${TPMFDE_PASSPHRASE}    ubuntuisthebestdistro1234
 
 
 *** Keywords ***
@@ -595,7 +596,7 @@ Encryption Passphrase Slide Test Entropy
         Keys Combo      ${tab}
         BuiltIn.Sleep     1
     END
-    Type String      ubuntuisthebestdistro1234
+    Type String      ${TPMFDE_PASSPHRASE}
     BuiltIn.Sleep     10
     Move Pointer To ${T}/generic/next.png
     EzClick
@@ -609,7 +610,7 @@ Wait For TPM Encrypted Reboot To Finish
 
     Restart Stream And Wait For Passphrase Entry
 
-    Type String    ubuntuisthebestdistro1234
+    Type String    ${TPMFDE_PASSPHRASE}
     ${combo}    Create List    Return
     Keys Combo    ${combo}
     Match Text        Not listed       300
@@ -693,3 +694,26 @@ Reboot Via Terminal
     Type String    ubuntu
     BuiltIn.Sleep    2    # hacky
     Keys Combo    ${enter}
+
+Open Security Center
+    [Documentation]     Opens the security center
+    BuiltIn.Sleep       45
+    Match    ${T}/generic/firefox-icon.png    120
+    Start Application           desktop-security-center
+    Match Text          Security Center       90
+    ${cnf}                Run Keyword And Return Status
+    ...                     Match Text        Command not found      10
+    IF    ${cnf}        Fail        desktop-security-center command not found
+
+Set Passphrase In Security Center
+    [Documentation]     Set a TPM/FDE passphrase in the security center
+    Open Security Center
+    Click LEFT Button On Disk Encryption
+    Click LEFT Button On Add Passphrase
+    Click LEFT Button On New Passphrase
+    Type String     ${TPMFDE_PASSPHRASE}
+    Click LEFT Button On Confirm Passphrase
+    Type String     ${TPMFDE_PASSPHRASE}
+    Click LEFT Button On ${T}/generic/security-center-tpm-fde-passphrase-add-button.png
+    Handle PolKit Prompt
+    Close Current Window
