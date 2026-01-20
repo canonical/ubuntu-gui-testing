@@ -311,6 +311,17 @@ Start sshd VSOCK socket
     Run Sudo Command In Terminal With Context  sudo systemctl start sshd-vsock.socket   livesession=${livesession}
     Close Terminal
 
+Expose SSH Over VSOCK Noble
+    [Documentation]         Expose ssh over VSOCK via socat
+    [Arguments]     ${livesession}=False
+    Install Debian Package  socat   livesession=${livesession}
+    Open Terminal
+    Run Sudo Command In Terminal With Context  sudo echo    livesession=${livesession}
+    Type String     sudo socat VSOCK-LISTEN:22,reuseaddr,fork TCP:localhost:22 &
+    Keys Combo  Return
+    Run Command In Terminal     disown
+    Close Terminal
+
 Entire Disk With ZFS
     [Documentation]    This slide assumes the disk is empty
     Match    ${T}/generic/disk-setup.png    180
