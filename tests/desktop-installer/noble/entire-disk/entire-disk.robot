@@ -10,6 +10,18 @@ Ensure Not Unfocused After Boot
     [Documentation]         Workaround LP: #2112383
     Ensure Not Unfocused After Boot
 
+Install OpenSSHServer
+    [Documentation]         Install openssh-server to collect logs
+    Install OpenSSHServer   livesession=True
+
+Expose SSH Over VSOCK Noble
+    [Documentation]         Expose ssh over VSOCK via socat
+    Expose SSH Over VSOCK Noble     livesession=True
+
+Set Live Session User Password
+    [Documentation]         Set password of the live session user to 'ubuntu'
+    Set Live Session User Password       ubuntu  ubuntu
+
 Language Slide
     [Documentation]         Go through language slide
     Select Language
@@ -78,6 +90,10 @@ Wait For GIS Popup
     [Documentation]         Wait for the gnome-initial-setup popup
     Wait For GIS Popup
 
-# Install OpenSSHServer
-#     [Documentation]         Install openssh-server to collect logs
-#     Install OpenSSHServer
+Install OpenSSHServer In Installed System
+    [Documentation]         Install openssh-server to collect logs
+    Install OpenSSHServer
+
+Expose SSH Over VSOCK Noble In Installed System
+    [Documentation]         Expose ssh over VSOCK via socat
+    Expose SSH Over VSOCK Noble
