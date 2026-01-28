@@ -11,14 +11,15 @@ Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-wo
 ${Z}    ${CURDIR}
 
 ${NEW_PASSPHRASE}    ubuntu2.
+${PIN}    123451234512345
 ${VOLUME_NAME}    my-vol
 ${RECOVERY_KEY_NAME}    test-recovery-key
 
 
 *** Test Cases ***
-Unlok Volume With Passphrase
-    [Documentation]    Unlock system volume with passphrase
-    Answer Prompt    Please enter passphrase    ${PASSPHRASE}
+Unlock System With Passphrase
+    [Documentation]    Unlock the system with passphrase
+    Unlock System With Passphrase
 
 Log In
     [Documentation]    Log in to desktop session
@@ -90,8 +91,7 @@ Remove Passphrase
     [Documentation]    Remove the default passphrase passphrase
     Run Command In Terminal    sudo tpmctl remove-passphrase
     Match Text    Passphrase removed successfully
-    Run Command In Terminal    tpmctl list-passphrases
-    Match Text    Passphrases:
+    Check No Match In Output    tpmctl list-passphrases    default
 
 Add Passphrase
     [Documentation]    Add the default passphrase passphrase
@@ -101,6 +101,23 @@ Add Passphrase
     Match Text    Passphrase added successfully
     Run Command In Terminal    tpmctl list-passphrases
     Match Text    default
+
+Add Pin
+    [Documentation]    Replace the passphrase with a pin
+    Run Command In Terminal    sudo tpmctl remove-passphrase
+    # reboot system in order to change the auth-mode from passphrase to none
+    Reboot System
+    Run Sudo Command In Terminal    sudo tpmctl add-pin
+    Answer Prompt    new pin    ${PIN}
+    Match Text    Pin added successfully
+    Run Command In Terminal    tpmctl list-pins
+    Match Text    default
+
+Remove Pin
+    [Documentation]    Remove pin from the system
+    Run Command In Terminal    sudo tpmctl remove-pin
+    Match Text    Pin removed successfully
+    Check No Match In Output    tpmctl list-pins    default
 
 Mount LUKS Volume
     [Documentation]    Mount a LUKS volume portected with a passphrase
