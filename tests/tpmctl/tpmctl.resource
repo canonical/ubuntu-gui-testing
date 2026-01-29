@@ -16,27 +16,31 @@ Run Simple Command
     Type String    ${cmd}
     Keys Combo    Return
 
+Run Command With Prompt
+    [Documentation]    Run command expecting an input prompt
+    [Arguments]    ${cmd}
+    Run Simple Command    clear && ${cmd}
+
 Answer Prompt
     [Documentation]    Answer to a prompt
     [Arguments]    ${prompt}    ${input}
-    Match Text    ${prompt}    10
+    Match Text    ${prompt}    20
     Type String    ${input}
     Keys Combo    Return
 
-Unlock System With Passphrase
-    [Documentation]    Unlock the system with passphrase
-    Answer Prompt    Please enter passphrase    ${PASSPHRASE}
-
 System Reboot
     [Documentation]    Reboot the system and log in again
+    [Arguments]    ${with_prompt}=${False}    ${prompt}=""    ${input}=""
     Run Simple Command    reboot
-    Unlock System With Passphrase
+    BuiltIn.Sleep    60
+    IF    ${with_prompt}    Answer Prompt    ${prompt}    ${input}
     Log In
     Open Terminal
+    Run Sudo Command In Terminal    sudo echo
 
 Check No Match In Output
     [Documentation]    Run a command in terminal and check that the give output isn't present
     [Arguments]    ${cmd}    ${output}
-    Run Command In Terminal    ${cmd} | grep ${output}
+    Run Simple Command   ${cmd} | grep ${output}
     Run Command In Terminal    echo $?
     Match Text    1

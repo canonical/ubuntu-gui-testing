@@ -19,7 +19,7 @@ ${RECOVERY_KEY_NAME}    test-recovery-key
 *** Test Cases ***
 Unlock System With Passphrase
     [Documentation]    Unlock the system with passphrase
-    Unlock System With Passphrase
+    Answer Prompt    Please enter passphrase    ${PASSPHRASE}
 
 Log In
     [Documentation]    Log in to desktop session
@@ -30,8 +30,9 @@ Install tpmctl
     # TODO: install from the store
     Open Terminal
     Run Command In Terminal    git clone http://github.com/canonical/snap-tpmctl && cd snap-tpmctl
-    Run Command In Terminal    snapcraft pack
-    Run Command In Terminal    sudo snap install *.snap --dangerous
+    Run Simple Command    snapcraft pack
+    BuiltIn.Sleep    240
+    Run Sudo Command In Terminal    sudo snap install *.snap --dangerous
     Run Command In Terminal    cd $HOME
     Run Command In Terminal    sudo snap connect tpmctl:snapd-control && sudo snap connect tpmctl:hardware-observe && sudo snap connect tpmctl:mountctl && sudo snap connect tpmctl:mount-observe && sudo snap connect tpmctl:block-devices && sudo snap connect tpmctl:dm-crypt
 
@@ -48,13 +49,13 @@ List All Recovery Keys
 
 Check Recovery Key
     [Documentation]    Check existing recovery key
-    Run Command In Terminal    sudo tpmctl check-recovery-key
+    Run Command With Prompt    sudo tpmctl check-recovery-key
     Answer Prompt    Enter recovery key:    ${RECOVERY_KEY}
     Match Text    recovery key works
 
 Check Recovery Key With Fail
     [Documentation]    Check existing recovery key
-    Run Command In Terminal    sudo tpmctl check-recovery-key
+    Run Command With Prompt    sudo tpmctl check-recovery-key
     Answer Prompt    Enter recovery key:    ${VOLUME_RECOVERY_KEY}
     Match Text    recovery key doesn't work
 
@@ -73,7 +74,7 @@ Regenerate An Existing Recovery Key
 
 Replace Passphrase With Fail
     [Documentation]    Fail to replace the default passphrase due incorrect passphrase
-    Run Command In Terminal    sudo tpmctl replace-passphrase
+    Run Command With Prompt    sudo tpmctl replace-passphrase
     Answer Prompt    current passphrase    ${NEW_PASSPHRASE}
     Answer Prompt    new passphrase    ${NEW_PASSPHRASE}
     Answer Prompt    new passphrase    ${NEW_PASSPHRASE}
@@ -81,11 +82,11 @@ Replace Passphrase With Fail
 
 Replace Passphrase
     [Documentation]    Replace the default passphrase
-    Run Command In Terminal    sudo tpmctl replace-passphrase
+    Run Command With Prompt    sudo tpmctl replace-passphrase
     Answer Prompt    current passphrase    ${PASSPHRASE}
     Answer Prompt    new passphrase    ${NEW_PASSPHRASE}
     Answer Prompt    new passphrase    ${NEW_PASSPHRASE}
-    Match Text    Passphrase replaced successfully
+    Match Text    Passphrase replaced successfully    60
 
 Remove Passphrase
     [Documentation]    Remove the default passphrase passphrase
@@ -93,35 +94,40 @@ Remove Passphrase
     Match Text    Passphrase removed successfully
     Check No Match In Output    tpmctl list-passphrases    default
 
-Add Passphrase
-    [Documentation]    Add the default passphrase passphrase
-    Run Command In Terminal    sudo tpmctl add-passphrase
-    Answer Prompt    new passphrase    ${PASSPHRASE}
-    Answer Prompt    new passphrase    ${PASSPHRASE}
-    Match Text    Passphrase added successfully
-    Run Command In Terminal    tpmctl list-passphrases
-    Match Text    default
-
-Add Pin
+Add PIN
     [Documentation]    Replace the passphrase with a pin
-    Run Command In Terminal    sudo tpmctl remove-passphrase
     # reboot system in order to change the auth-mode from passphrase to none
-    Reboot System
-    Run Sudo Command In Terminal    sudo tpmctl add-pin
-    Answer Prompt    new pin    ${PIN}
-    Match Text    Pin added successfully
+    System Reboot
+
+    Run Command With Prompt    sudo tpmctl add-pin
+    Answer Prompt    new PIN    ${PIN}
+    Answer Prompt    new PIN    ${PIN}
+    Match Text    PIN added successfully
     Run Command In Terminal    tpmctl list-pins
     Match Text    default
 
-Remove Pin
+Remove PIN
     [Documentation]    Remove pin from the system
+    # reboot system in order to change the auth-mode from none to pin
+    System Reboot    enter PIN    ${PIN}
     Run Command In Terminal    sudo tpmctl remove-pin
-    Match Text    Pin removed successfully
+    Match Text    PIN removed successfully
     Check No Match In Output    tpmctl list-pins    default
+
+Add Passphrase
+    [Documentation]    Add the default passphrase passphrase
+    # reboot system in order to change the auth-mode from pin to none
+    System Reboot
+    Run Command With Prompt    sudo tpmctl add-passphrase
+    Answer Prompt    new passphrase    ${PASSPHRASE}
+    Answer Prompt    new passphrase    ${PASSPHRASE}
+    Match Text    Passphrase added successfully    60
+    Run Command In Terminal    tpmctl list-passphrases
+    Match Text    default
 
 Mount LUKS Volume
     [Documentation]    Mount a LUKS volume portected with a passphrase
-    Run Simple Command    sudo tpmctl mount-volume ${DEVICE_PATH} ${VOLUME_NAME}
+    Run Command With Prompt    sudo tpmctl mount-volume ${DEVICE_PATH} ${VOLUME_NAME}
     Answer Prompt    Enter recovery key:    ${VOLUME_RECOVERY_KEY}
     BuiltIn.Sleep    1
     Run Command In Terminal    ls /dev/mapper
