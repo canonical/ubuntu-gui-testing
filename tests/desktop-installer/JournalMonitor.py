@@ -49,7 +49,7 @@ class JournalMonitor:
             "--follow",
         ]
 
-        with open(journal_file, "wb+") as f:
+        with open(journal_file, "ab") as f:
             try:
                 self.process = subprocess.Popen(
                     cmd,
