@@ -26,6 +26,10 @@ Set Live Session User Password
     [Documentation]         Set password of the live session user to 'ubuntu'
     Set Live Session User Password       ubuntu  ubuntu
 
+Start Journal Monitor
+    [Documentation]         Start monitoring the system journal
+    JournalMonitor.Start
+
 Language Slide
     [Documentation]         Go through language slide
     Select Language

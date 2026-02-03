@@ -26,6 +26,10 @@ Set Live Session User Password
     [Documentation]         Set password of the live session user to 'ubuntu'
     Set Live Session User Password       ubuntu  ubuntu
 
+Start Journal Monitor
+    [Documentation]         Start monitoring the system journal
+    JournalMonitor.Start
+
 Language Slide
     [Documentation]         Go through language slide
     Select Language
@@ -98,6 +102,10 @@ Wait For TPM Install To Finish
     [Documentation]         Wait for the installation to finish
     Wait For TPM Install To Finish
 
+Stop Journal Monitor
+    [Documentation]         Stop monitoring the system journal
+    JournalMonitor.Stop
+
 Wait For TPM Encrypted Reboot To Finish With Pin
     [Documentation]         Wait for the post-install reboot to finish, and enter pin code on reboot
     Wait For TPM Encrypted Reboot To Finish With Pin
@@ -113,3 +121,7 @@ Install OpenSSHServer In Installed System
 Start sshd VSOCK socket In Installed System
     [Documentation]         Start sshd-vsock.socket
     Start sshd VSOCK socket
+
+Start Journal Monitor In Installed System
+    [Documentation]         Start monitoring the system journal
+    JournalMonitor.Start

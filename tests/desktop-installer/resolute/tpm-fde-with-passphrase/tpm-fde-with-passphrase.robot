@@ -30,6 +30,10 @@ Set Live Session User Password
     [Documentation]         Set password of the live session user to 'ubuntu'
     Set Live Session User Password       ubuntu  ubuntu
 
+Start Journal Monitor
+    [Documentation]         Start monitoring the system journal
+    JournalMonitor.Start
+
 Language Slide
     [Documentation]         Go through language slide
     Select Language
@@ -107,6 +111,10 @@ Wait For TPM Install To Finish
     ...                     console=true
     VAR       ${RECOVERY_KEY}       ${recovery_key}       scope=GLOBAL  # robocop: off=no-global-variable
 
+Stop Journal Monitor
+    [Documentation]         Stop monitoring the system journal
+    JournalMonitor.Stop
+
 Wait For TPM Encrypted Reboot To Finish
     [Documentation]         Wait for the post-install reboot to finish, and enter passphrase on reboot
     Wait For TPM Encrypted Reboot To Finish
@@ -126,3 +134,7 @@ Start sshd VSOCK socket In Installed System
 Reboot And Use Recovery Key Instead Of Passphrase
     [Documentation]         Reboot again from the desktop environment and use the recovery key instead of the passphrase
     Reboot And Use Recovery Key Instead Of Passphrase           ${RECOVERY_KEY}
+
+Start Journal Monitor In Installed System
+    [Documentation]         Start monitoring the system journal
+    JournalMonitor.Start

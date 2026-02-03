@@ -22,6 +22,10 @@ Set Live Session User Password
     [Documentation]         Set password of the live session user to 'ubuntu'
     Set Live Session User Password       ubuntu  ubuntu
 
+Start Journal Monitor
+    [Documentation]         Start monitoring the system journal
+    JournalMonitor.Start
+
 Language Slide
     [Documentation]         Go through language slide
     Select Language
@@ -86,6 +90,10 @@ Wait For Install To Finish
     [Documentation]         Wait for the installation to finish
     Wait For Install To Finish
 
+Stop Journal Monitor
+    [Documentation]         Stop monitoring the system journal
+    JournalMonitor.Stop
+
 Wait For ZFS Encrypted Reboot To Finish
     [Documentation]         Wait for the post-install reboot to finish, and enter passphrase on reboot
     Wait For ZFS Encrypted Reboot To Finish
@@ -101,3 +109,7 @@ Install OpenSSHServer In Installed System
 Expose SSH Over VSOCK Noble In Installed System
     [Documentation]         Expose ssh over VSOCK via socat
     Expose SSH Over VSOCK Noble
+
+Start Journal Monitor In Installed System
+    [Documentation]         Start monitoring the system journal
+    JournalMonitor.Start

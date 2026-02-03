@@ -26,6 +26,10 @@ Set Live Session User Password
     [Documentation]         Set password of the live session user to 'ubuntu'
     Set Live Session User Password       ubuntu  ubuntu
 
+Start Journal Monitor
+    [Documentation]         Start monitoring the system journal
+    JournalMonitor.Start
+
 Language Slide
     [Documentation]         Go through language slide
     Select Language
@@ -90,6 +94,10 @@ Wait For TPM Install To Finish
     [Documentation]         Wait for the installation to finish
     Wait For TPM Install To Finish
 
+Stop Journal Monitor
+    [Documentation]         Stop monitoring the system journal
+    JournalMonitor.Stop
+
 Wait For Reboot To Finish
     [Documentation]         Wait for the post-install reboot to finish
     Wait For Reboot To Finish
@@ -109,3 +117,7 @@ Start sshd VSOCK socket In Installed System
 Open Firmware Updater
     [Documentation]         Make sure the firmware-updater snap opens
     Open Firmware Updater
+
+Start Journal Monitor In Installed System
+    [Documentation]         Start monitoring the system journal
+    JournalMonitor.Start
