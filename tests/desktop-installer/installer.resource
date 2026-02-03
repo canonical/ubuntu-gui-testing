@@ -5,6 +5,7 @@ Resource        ${CURDIR}/common/common.resource
 
 Library         OperatingSystem
 Library         String
+Library         ./JournalMonitor.py  AS  JournalMonitor
 
 
 *** Variables ***
