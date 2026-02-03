@@ -1,0 +1,3 @@
+[submodule "tests/prompting/variants/hardware"]
+	path = tests/prompting/variants/hardware
+	url = https://github.com/canonical/prompting-camera-e2e-hardware-test.git
