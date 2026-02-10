@@ -45,6 +45,7 @@ Restart Stream And Wait For Unlock Disk
     IF    not ${match}    Fail    No match found
 
 Grub Menu
+    # Only used in resolute tests
     [Documentation]     Boot live ISO from grub menu
     ${match}                Run Keyword And Return Status
     ...                     Match Text       GRUB      150
@@ -73,6 +74,7 @@ Grub Menu
     END
 
 Select Erase Disk and Reinstall
+    # Only used in resolute tests
     [Documentation]    Erase the entire disk and reinstall
     Match Text      Disk setup      300
     Move Pointer To "Erase disk and install Ubuntu"
@@ -171,6 +173,7 @@ Choose Where to Install Ubuntu
     END
 
 Encryption And File System Zfs Encryption
+    # Only used in resolute tests
     [Documentation]         Select zfs and encryption in the Encryption + FS slide
     Match    ${T}/generic/encryption-and-file-system.png    120
     Match    ${T}/generic/encryption-and-file-system.png    120
@@ -189,6 +192,7 @@ Encryption And File System Zfs Encryption
     EzClick
 
 Disk Passphrase Setup Questing Onwards
+    # Only used in resolute tests
     [Documentation]    Sets up passphrase for encrypted installations
     Match Text        Set an encryption passphrase        20
     ${combo}    Create List    Tab
@@ -324,6 +328,7 @@ Expose SSH Over VSOCK Noble
     Close Terminal
 
 Entire Disk With ZFS
+    # Only used in noble tests
     [Documentation]    This slide assumes the disk is empty
     Match    ${T}/generic/disk-setup.png    180
     Move Pointer To "Erase disk and install Ubuntu"
@@ -368,6 +373,7 @@ Wait For Reboot To Finish
     EzClick
 
 Entire Disk With ZFS Plus Encryption
+    # Only used in noble tests
     [Documentation]    This slide assumes the disk is empty
     Match    ${T}/generic/disk-setup.png    180
     Move Pointer To "Erase disk and install Ubuntu"
@@ -384,6 +390,7 @@ Entire Disk With ZFS Plus Encryption
     EzClick
 
 Disk Passphrase Setup
+    # Only used in noble tests
     [Documentation]    Sets up passphrase for encrypted installations
     Match    ${T}/generic/disk-passphrase.png    20
     Move Pointer To ${T}/generic/choose-a-passphrase.png
@@ -400,6 +407,7 @@ Disk Passphrase Setup
     EzClick
 
 Entire Disk
+    # Only used in noble tests
     [Documentation]    This slide assumes the disk is empty
     Match    ${T}/generic/disk-setup.png    180
     Move Pointer To "Erase disk and install Ubuntu"
@@ -409,6 +417,7 @@ Entire Disk
     EzClick
 
 Entire Disk With LVM Plus Encryption
+    # Only used in noble tests
     [Documentation]    This slide assumes the disk is empty
     Match    ${T}/generic/disk-setup.png    180
     Move Pointer To "Erase disk and install Ubuntu"
@@ -447,6 +456,7 @@ Wait For LVM Encrypted Reboot To Finish
     EzClick
 
 Encryption And File System Tpm Not Available
+    # Only used in resolute tests
     [Documentation]         Ensure that TPM isn't available on the encryption slide
     Match    ${T}/generic/encryption-and-file-system.png    120
     Match    ${T}/generic/encryption-and-file-system-no-encryption-selected.png    20
@@ -460,6 +470,7 @@ Encryption And File System Tpm Not Available
     END
 
 Encryption And File System Tpm Encryption
+    # Only used in resolute tests
     [Documentation]         Choose TPM encryption on encryption slide
     Match    ${T}/generic/encryption-and-file-system.png    120
     Match    ${T}/generic/encryption-and-file-system-no-encryption-selected.png    20
@@ -560,6 +571,7 @@ Wait For TPM Encrypted Reboot To Finish With Pin
     EzClick
 
 Encryption And File System Lvm Encryption
+    # Only used in resolute tests
     [Documentation]         Choose LVM + encryption
     Match    ${T}/generic/encryption-and-file-system.png    120
     Match    ${T}/generic/encryption-and-file-system-no-encryption-selected.png    20
@@ -579,6 +591,7 @@ Encryption PIN Or Passphrase Use Neither
     EzClick
 
 Encryption And File System No Encryption
+    # Only used in resolute tests
     [Documentation]         Select no encryption in the Encryption + FS slide
     Match    ${T}/generic/encryption-and-file-system.png    120
     Match    ${T}/generic/encryption-and-file-system-no-encryption-selected.png    120
@@ -680,6 +693,7 @@ Reboot And Use Recovery Key Instead Of Passphrase
     EzClick
 
 Encryption And File System Zfs No Encryption
+    # Only used in resolute tests
     [Documentation]         Select zfs no encryption in the Encryption + FS slide
     Match    ${T}/generic/encryption-and-file-system.png    120
     Match    ${T}/generic/encryption-and-file-system-no-encryption-selected.png    20
