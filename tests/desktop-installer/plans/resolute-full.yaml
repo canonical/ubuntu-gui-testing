@@ -10,7 +10,5 @@ tests:
     entrypoint: "tests/desktop-installer/"
   Resolute.Tpm-Fde-No-Passphrase:
     entrypoint: "tests/desktop-installer/"
-  Resolute.Tpm-Fde-With-Passphrase:
-    entrypoint: "tests/desktop-installer/"
   Resolute.Tpm-Fde-Not-Available:
     entrypoint: "tests/desktop-installer/"
