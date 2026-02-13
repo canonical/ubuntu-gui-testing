@@ -1,8 +1,8 @@
 *** Settings ***
-Documentation       Tests for tpmctl
+Documentation       Tests for snap-tpmctl
 
 Library             String
-Resource            ${Z}/../tpmctl.resource
+Resource            ${Z}/../snap-tpmctl.resource
 
 Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-word
 
@@ -25,8 +25,8 @@ Log In
     [Documentation]    Log in to desktop session
     Log In
 
-Install tpmctl
-    [Documentation]    Install the tpmctl snap
+Install snap-tpmctl
+    [Documentation]    Install the snap-tpmctl snap
     Install Snap Package    snap-tpmctl
     Open Terminal
     Run Sudo Command In Terminal    sudo snap connect snap-tpmctl:snapd-control

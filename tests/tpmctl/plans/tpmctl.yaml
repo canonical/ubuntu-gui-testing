@@ -1,4 +1,0 @@
----
-tests:
-  Tpmctl-CLI:
-    entrypoint: "tests/tpmctl/"
