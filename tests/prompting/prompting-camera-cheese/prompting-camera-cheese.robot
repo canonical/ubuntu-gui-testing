@@ -2,6 +2,7 @@
 Documentation       Basic tests for the prompting-client snap
 
 Resource            ${Z}/../prompting.resource
+Library             OperatingSystem
 
 Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-word
 
@@ -22,11 +23,17 @@ Log In
 Prepare Test Enviroment
     [Documentation]    Prepare test enviroment
     Install Snap Package    cheese
-    Install Debian Package    gstreamer1.0-tools
-    Open Terminal
-    Run Sudo Command In Terminal    sudo modprobe v4l2loopback devices=1 video_nr=0 exclusive_caps=1
-    Run Simple Command    gst-launch-1.0 videotestsrc ! videoconvert ! v4l2sink device=/dev/video0
-    BuiltIn.Sleep    2
+
+    # VNC_PORT set means we are testing in a VM enviroment,
+    # only in that case we need to setup a proper video device
+    ${vnc_port}=    Get Environment Variable    VNC_PORT    ${EMPTY}
+    IF    '${vnc_port}' != '${EMPTY}'
+        Install Debian Package    gstreamer1.0-tools
+        Open Terminal
+        Run Sudo Command In Terminal    sudo modprobe v4l2loopback devices=1 video_nr=0 exclusive_caps=1
+        Run Simple Command    gst-launch-1.0 videotestsrc ! videoconvert ! v4l2sink device=/dev/video0
+        BuiltIn.Sleep    2
+    END
 
 Enable Prompting
     [Documentation]    Enable prompting
@@ -36,9 +43,9 @@ Deny Once
     [Documentation]    Deny access to camera interface
     Start Application    cheese
     # The first attempt will spawn 3 prompts
-    Reply To Simple Prompt    Allow cheese to access your camera?    Deny Once
-    Reply To Simple Prompt    Allow cheese to access your camera?    Deny Once
-    Reply To Simple Prompt    Allow cheese to access your camera?    Deny Once
+    FOR    ${_}    IN RANGE    2
+        Reply To Simple Prompt    Allow cheese to access your camera?    Deny Once
+    END
     Cheese No Device
     Close Current Window
     BuiltIn.Sleep    2
