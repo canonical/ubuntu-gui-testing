@@ -1,4 +1,4 @@
 ---
 tests:
-  Snap-Tpmclt-CLI:
+  Snap-Tpmctl-CLI:
     entrypoint: "tests/snap-tpmctl/"
