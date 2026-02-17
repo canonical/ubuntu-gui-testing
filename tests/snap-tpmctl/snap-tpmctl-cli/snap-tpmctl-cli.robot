@@ -12,7 +12,6 @@ ${Z}    ${CURDIR}
 
 ${NEW_PASSPHRASE}    ubuntu2.
 ${PIN}    123451234512345
-${DIRECTORY}    /media/my-vol
 ${RECOVERY_KEY_NAME}    test-recovery-key
 
 
@@ -99,7 +98,7 @@ Remove Passphrase
 
 Add PIN
     [Documentation]    Replace the passphrase with a pin
-    # reboot system in order to change the auth-mode from passphrase to none
+    # reboot system in order to change the auth-mode from `passphrase` to `none`
     System Reboot
 
     Run Command With Prompt    sudo snap-tpmctl add-pin
@@ -111,44 +110,21 @@ Add PIN
 
 Remove PIN
     [Documentation]    Remove pin from the system
-    # reboot system in order to change the auth-mode from none to pin
+    # reboot system in order to change the auth-mode from `none` to `pin`
     System Reboot    Enter PIN or recovery key    ${PIN}
+
     Run Command In Terminal    sudo snap-tpmctl remove-pin
     Match Text    PIN removed successfully
     Check No Match In Output    snap-tpmctl list-pins    default
 
 Add Passphrase
     [Documentation]    Add the default passphrase passphrase
-    # reboot system in order to change the auth-mode from pin to none
+    # reboot system in order to change the auth-mode from `pin` to `none`
     System Reboot
+
     Run Command With Prompt    sudo snap-tpmctl add-passphrase
     Answer Prompt    new passphrase    ${PASSPHRASE}
     Answer Prompt    new passphrase    ${PASSPHRASE}
     Match Text    Passphrase added successfully    60
     Run Command In Terminal    snap-tpmctl list-passphrases
     Match Text    default
-
-Mount LUKS Volume With Fail
-    [Documentation]    Mount a LUKS volume portected with a passphrase
-    Run Command With Prompt    sudo snap-tpmctl mount-volume ${DEVICE} test
-    Match Text    directory path must be a valid absolute path
-
-Mount LUKS Volume
-    [Documentation]    Mount a LUKS volume portected with a passphrase
-    Run Command With Prompt    sudo snap-tpmctl mount-volume ${DEVICE} ${DIRECTORY}
-    Answer Prompt    Enter recovery key:    ${VOLUME_RECOVERY_KEY}
-    BuiltIn.Sleep    1
-    Run Command In Terminal    lsblk | grep ${DIRECTORY}
-    Match Text    crypt ${DIRECTORY}
-
-Unmount LUKS Volume
-    [Documentation]    Unmount a LUKS volume
-    Run Command In Terminal    sudo snap-tpmctl unmount-volume ${DIRECTORY}
-    Run Command In Terminal    lsblk | grep ${DIRECTORY}
-    Run Command In Terminal    echo $?
-    Match Text    1
-
-Unmount LUKS Volume With Fail
-    [Documentation]    Unmount a LUKS volume
-    Run Command In Terminal    sudo snap-tpmctl unmount-volume ${DIRECTORY}
-    Match Text    ERROR systemd-cryptsetup failed with:

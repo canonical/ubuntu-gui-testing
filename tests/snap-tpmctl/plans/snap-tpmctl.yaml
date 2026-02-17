@@ -2,3 +2,5 @@
 tests:
   Snap-Tpmctl-CLI:
     entrypoint: "tests/snap-tpmctl/"
+  Snap-Tpmctl-Mount:
+    entrypoint: "tests/snap-tpmctl/"
