@@ -13,6 +13,7 @@ ${Z}    ${CURDIR}
 ${NEW_PASSPHRASE}    ubuntu2.
 ${PIN}    123451234512345
 ${RECOVERY_KEY_NAME}    test-recovery-key
+${FAKE_RECOVERY_KEY}    11111-22222-33333-44444-55555-12345-23451-34512
 
 
 *** Test Cases ***
@@ -56,7 +57,7 @@ Check Recovery Key
 Check Recovery Key With Fail
     [Documentation]    Check existing recovery key
     Run Command With Prompt    sudo snap-tpmctl check-recovery-key
-    Answer Prompt    Enter recovery key:    ${VOLUME_RECOVERY_KEY}
+    Answer Prompt    Enter recovery key:    ${FAKE_RECOVERY_KEY}
     Match Text    recovery key doesn't work
 
 Create A New Recovery Key

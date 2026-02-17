@@ -37,7 +37,7 @@ Mount LUKS Volume With Fail
 Mount LUKS Volume
     [Documentation]    Mount a LUKS volume portected with a passphrase
     Run Command With Prompt    sudo snap-tpmctl mount-volume ${DEVICE} ${DIRECTORY}
-    Answer Prompt    Enter recovery key:    ${VOLUME_RECOVERY_KEY}
+    Answer Prompt    Enter recovery key:    ${RECOVERY_KEY}
     BuiltIn.Sleep    1
     Run Command In Terminal    lsblk | grep ${DIRECTORY}
     Match Text    crypt ${DIRECTORY}
