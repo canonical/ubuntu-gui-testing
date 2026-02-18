@@ -8,3 +8,6 @@ tests:
     entrypoint: "tests/prompting/"
     requirements:
       tpm: true
+  Prompting-Home-NotepadPlusPlus:
+    entrypoint: "tests/prompting/"
+    tpm: true
