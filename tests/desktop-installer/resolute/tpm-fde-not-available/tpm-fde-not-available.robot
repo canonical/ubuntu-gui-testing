@@ -74,6 +74,10 @@ Choose Where to Install Ubuntu
     [Documentation]         Go through slide showing various disks, if present
     Choose Where to Install Ubuntu  template=generic-resolute
 
+Encryption And File System Tpm Encryption
+    [Documentation]         Select tpm encryption from the encryption menu
+    Encryption And File System Tpm Encryption
+
 Encryption And File System Tpm Not Available
     [Documentation]         Ensure that the TPM FDE encryption option is greyed out, and not selectable
     Encryption And File System Tpm Not Available
