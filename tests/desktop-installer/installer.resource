@@ -299,7 +299,7 @@ Wait For ZFS Encrypted Reboot To Finish
     Match Text        Not listed       300
     ${combo}    Create List    Return
     Keys Combo    ${combo}
-    BuiltIn.Sleep     5
+    Match Text    Password    60
     Type String    ubuntu
     Keys Combo    ${combo}
     Match Text      Welcome to Ubuntu     360
@@ -372,7 +372,7 @@ Wait For Reboot To Finish
     EzClick
 
     Keys Combo    ${combo}
-    BuiltIn.Sleep     5
+    Match Text    Password    60
     Type String    ubuntu
     Keys Combo    ${combo}
     Match Text      Welcome to Ubuntu     360
@@ -454,7 +454,7 @@ Wait For LVM Encrypted Reboot To Finish
     Match Text        Not listed       300
     ${combo}    Create List    Return
     Keys Combo    ${combo}
-    BuiltIn.Sleep     5
+    Match Text    Password    60
     Type String    ubuntu
     Keys Combo    ${combo}
     # Match    ${T}/generic/firefox-icon.png    360
