@@ -297,6 +297,7 @@ Wait For ZFS Encrypted Reboot To Finish
     ${combo}    Create List    Return
     Keys Combo    ${combo}
     Match Text        Not listed       300
+    BuiltIn.Sleep    5
     ${combo}    Create List    Return
     Keys Combo    ${combo}
     Match Text    Password    60
@@ -371,7 +372,6 @@ Wait For Reboot To Finish
     Move Pointer To ${T}/generic/login-prompt.png
     EzClick
 
-    Keys Combo    ${combo}
     Match Text    Password    60
     Type String    ubuntu
     Keys Combo    ${combo}
@@ -452,6 +452,7 @@ Wait For LVM Encrypted Reboot To Finish
     ${combo}    Create List    Return
     Keys Combo    ${combo}
     Match Text        Not listed       300
+    BuiltIn.Sleep    5
     ${combo}    Create List    Return
     Keys Combo    ${combo}
     Match Text    Password    60
