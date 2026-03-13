@@ -10,6 +10,7 @@ Library         ./JournalMonitor.py  AS  JournalMonitor
 
 *** Variables ***
 ${T}    ${CURDIR}
+${FW_SELECTED_COLOR}    152,152,152
 
 
 *** Keywords ***
@@ -597,3 +598,53 @@ Set Live Session User Password
     Keys Combo    Return
     BuiltIn.Sleep    1
     Close Terminal
+
+Press ${key} Until Match Text
+    [Documentation]     Repeatedly press a key until the given text is matched
+    [Arguments]     ${text}     ${color}=None   ${timeout}=2    ${retries}=10
+    FOR    ${_}    IN RANGE     ${retries}
+        ${match}   Run Keyword And Return Status  Match Text  ${text}     color=${color}  timeout=${timeout}
+        IF    ${match}      RETURN
+        Keys Combo  ${key}
+    END
+    Fail
+
+Enter Firmware Settings
+    [Documentation]     Enter Firmware Settings from GRUB
+    Match Text    GRUB
+    Type String    cfwsetup
+    Keys Combo    Return
+
+Toggle Secure Boot
+    [Documentation]     Toggle Secure Boot in Firmware Settings
+    Press Down Until Match Text  Device Manager  color=${FW_SELECTED_COLOR}
+    Keys Combo    Return
+    Press Down Until Match Text  Secure Boot Configuration  color=${FW_SELECTED_COLOR}
+    Keys Combo    Return
+    Press Down Until Match Text  Toggle Checkbox  color=${FW_SELECTED_COLOR}
+    Keys Combo    space
+    Match Text    Configuration changed
+    Keys Combo    space
+    Keys Combo    F10
+    Match Text    Save configuration changes?
+    Keys Combo    y
+    Keys Combo    Esc
+    Keys Combo    Esc
+    Press Down Until Match Text  Continue  color=${FW_SELECTED_COLOR}
+    Keys Combo    Return
+    Match Text    Configuration changed
+    Keys Combo    Return
+
+Disable Secure Boot
+    [Documentation]     Enter firmware settings from GRUB and toggle secure boot
+    Enter Firmware Settings
+    Toggle Secure Boot
+
+TPM Action Enable Secure Boot Manually
+    [Documentation]     Enable Secure Boot Manually when prompted on the TPM action page
+    Move Pointer To "Enable secure boot manually"
+    EzClick
+    Move Pointer To "Restart to firmware settings"
+    EzClick
+    Match Text  Device Manager  180
+    Toggle Secure Boot
