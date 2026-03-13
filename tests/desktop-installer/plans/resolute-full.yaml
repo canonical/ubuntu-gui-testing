@@ -12,3 +12,5 @@ tests:
     entrypoint: "tests/desktop-installer/"
   Resolute.Tpm-Fde-Not-Available:
     entrypoint: "tests/desktop-installer/"
+  Resolute.Tpm-Fde-Action-Api-Secure-Boot:
+    entrypoint: "tests/desktop-installer/"
