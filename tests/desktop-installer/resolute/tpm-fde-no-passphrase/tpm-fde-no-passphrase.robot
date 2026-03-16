@@ -100,7 +100,7 @@ Stop Journal Monitor
 
 Wait For Reboot To Finish
     [Documentation]         Wait for the post-install reboot to finish
-    Wait For Reboot To Finish
+    Wait For Reboot To Finish  template=generic-resolute
 
 Wait For GIS Popup
     [Documentation]         Wait for the gnome-initial-setup popup
