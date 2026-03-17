@@ -355,22 +355,24 @@ Entire Disk With ZFS
 
 Restart Stream And Wait For Login
     [Documentation]         Restart stream and wait for the login screen
+    [Arguments]     ${template}=generic
     FOR    ${_}    IN RANGE    120
         Restart Video Input
         ${match}                Run Keyword And Return Status
-        ...                     Match       ${T}/generic/login-prompt.png       15
+        ...                     Match       ${T}/${template}/login-prompt.png       15
         IF    ${match}    BREAK
     END
     IF    not ${match}    Fail    No match found
 
 Wait For Reboot To Finish
     [Documentation]    Login Prompt
+    [Arguments]     ${template}=generic
     ${combo}    Create List    Return
     Match Text       Please remove        120
     Keys Combo    ${combo}
 
-    Restart Stream And Wait For Login
-    Move Pointer To ${T}/generic/login-prompt.png
+    Restart Stream And Wait For Login  template=${template}
+    Move Pointer To ${T}/${template}/login-prompt.png
     EzClick
 
     Match Text    Password    60
