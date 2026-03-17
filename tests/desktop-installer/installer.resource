@@ -616,6 +616,7 @@ Enter Firmware Settings
     Match Text    GRUB
     Type String    cfwsetup
     Keys Combo    Return
+    Match Text    Standard PC  60
 
 Toggle Secure Boot
     [Documentation]     Toggle Secure Boot in Firmware Settings
