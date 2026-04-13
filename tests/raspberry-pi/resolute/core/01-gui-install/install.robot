@@ -25,7 +25,7 @@ Test Tags
 *** Test Cases ***
 Assert Test init
     [Documentation]    Ensure we're ready to begin the test
-    Match    ${CURDIR}/snapshots/screens/screen_01.jpg
+    Match    ${CURDIR}/snapshots/screens/screen_01.jpg    240
 
 Language Select
     [Documentation]    Select English language
