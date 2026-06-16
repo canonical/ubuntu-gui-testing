@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import time
 from abc import abstractmethod
 from datetime import date
 from pathlib import Path
@@ -16,6 +17,8 @@ from ubuntu_gui_testing_runner.constants import (
     DEFAULT_POOL_DIR,
     DEFAULT_POOL_NAME,
     DEFAULT_POOL_TEMPLATE,
+    GRACEFUL_SHUTDOWN_POLL_INTERVAL,
+    GRACEFUL_SHUTDOWN_TIMEOUT,
 )
 from ubuntu_gui_testing_runner.runner import Runner
 
@@ -107,40 +110,40 @@ class _BaseLibvirtRunner(Runner):
             self._pool.refresh(0)
 
         if self.keep:
+            if self._domain is not None:
+                self._shutdown_domain()
             LOGGER.info(
                 "Keeping domain '%s' and associated resources as requested",
                 self.domain_name,
             )
-            return
+        else:
+            if self._domain is not None:
+                self._destroy_domain()
 
-        if self._disk_volume is not None:
-            try:
-                self._disk_volume.delete()
-            except libvirt.libvirtError:
-                LOGGER.exception(
-                    "Failed to delete disk volume '%s'", self.disk_volume_name
-                )
+            if self._disk_volume is not None:
+                try:
+                    self._disk_volume.delete()
+                except libvirt.libvirtError:
+                    LOGGER.exception(
+                        "Failed to delete disk volume '%s'", self.disk_volume_name
+                    )
 
-        if self._pool is not None:
-            try:
-                nvram_volume = self._pool.storageVolLookupByName(self.nvram_volume_name)
-                nvram_volume.delete()
-            except libvirt.libvirtError:
-                LOGGER.exception(
-                    "Failed to delete NVRAM volume '%s'", self.nvram_volume_name
-                )
+            if self._pool is not None:
+                try:
+                    nvram_volume = self._pool.storageVolLookupByName(
+                        self.nvram_volume_name
+                    )
+                    nvram_volume.delete()
+                except libvirt.libvirtError:
+                    LOGGER.exception(
+                        "Failed to delete NVRAM volume '%s'", self.nvram_volume_name
+                    )
 
-        if self._domain is not None:
-            try:
-                if self._domain.isActive() == 1:
-                    self._domain.destroy()
-            except libvirt.libvirtError:
-                LOGGER.exception("Failed to destroy domain '%s'", self.domain_name)
-
-            try:
-                self._domain.undefine()
-            except libvirt.libvirtError:
-                LOGGER.exception("Failed to undefine domain '%s'", self.domain_name)
+            if self._domain is not None:
+                try:
+                    self._domain.undefine()
+                except libvirt.libvirtError:
+                    LOGGER.exception("Failed to undefine domain '%s'", self.domain_name)
 
         if self._conn is not None:
             try:
@@ -152,6 +155,59 @@ class _BaseLibvirtRunner(Runner):
         self._disk_volume = None
         self._pool = None
         self._conn = None
+
+    def _shutdown_domain(self) -> None:
+        """Power off the domain, gracefully first then forcefully on timeout.
+
+        Requests an ACPI shutdown and polls until the domain becomes
+        inactive.  If it does not power off within
+        ``GRACEFUL_SHUTDOWN_TIMEOUT`` seconds, it is forcefully destroyed.
+        Any libvirt error degrades to a forced destroy so teardown can
+        always proceed.
+        """
+        try:
+            if self.domain.isActive() != 1:
+                return
+        except libvirt.libvirtError:
+            LOGGER.exception("Failed to query state of domain '%s'", self.domain_name)
+            return
+
+        LOGGER.info("Requesting graceful shutdown of domain '%s'", self.domain_name)
+        try:
+            self.domain.shutdown()
+        except libvirt.libvirtError:
+            LOGGER.exception(
+                "Failed to request graceful shutdown of domain '%s'", self.domain_name
+            )
+            self._destroy_domain()
+            return
+
+        deadline = time.monotonic() + GRACEFUL_SHUTDOWN_TIMEOUT
+        while time.monotonic() < deadline:
+            try:
+                if self.domain.isActive() != 1:
+                    LOGGER.info("Domain '%s' shut down gracefully", self.domain_name)
+                    return
+            except libvirt.libvirtError:
+                LOGGER.exception(
+                    "Failed to query state of domain '%s'", self.domain_name
+                )
+                return
+            time.sleep(GRACEFUL_SHUTDOWN_POLL_INTERVAL)
+
+        LOGGER.warning(
+            "Domain '%s' did not shut down within %ss, forcing destroy",
+            self.domain_name,
+            GRACEFUL_SHUTDOWN_TIMEOUT,
+        )
+        self._destroy_domain()
+
+    def _destroy_domain(self) -> None:
+        try:
+            if self.domain.isActive() == 1:
+                self.domain.destroy()
+        except libvirt.libvirtError:
+            LOGGER.exception("Failed to destroy domain '%s'", self.domain_name)
 
     async def _run(self, suite: str, test: str) -> int:
         """Start the domain and log key runtime connectivity properties."""

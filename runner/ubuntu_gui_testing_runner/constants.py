@@ -17,6 +17,9 @@ DEFAULT_SWTPM_STATE_DIR = Path.home() / ".config/libvirt/qemu/swtpm"
 DEFAULT_TEST_USERNAME = "ubuntu"
 DEFAULT_TEST_PASSWORD = "ubuntu"  # noqa: S105
 
+GRACEFUL_SHUTDOWN_TIMEOUT = 30
+GRACEFUL_SHUTDOWN_POLL_INTERVAL = 1
+
 # Domain metadata constants for libvirt XML persistence
 DOMAIN_METADATA_NAMESPACE = "https://canonical.com/ubuntu-gui-testing"
 DOMAIN_METADATA_ROOT = "ugt"

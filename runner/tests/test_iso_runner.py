@@ -215,6 +215,7 @@ def test_close_destroys_and_undefines_domain_when_keep_is_false(tmp_path: Path) 
         )
         runner.close()
 
+    persistent_domain.shutdown.assert_not_called()
     persistent_domain.destroy.assert_called_once()
     persistent_domain.undefine.assert_called_once()
 
@@ -244,6 +245,91 @@ def test_close_preserves_resources_when_keep_is_true(tmp_path: Path) -> None:
         runner.close()
 
     persistent_domain.destroy.assert_not_called()
+    persistent_domain.undefine.assert_not_called()
+
+
+def _make_keep_runner(tmp_path: Path, persistent_domain: MagicMock) -> LibvirtIsoRunner:
+    """Build a keep=True ISO runner backed by the given persistent domain."""
+    conn = _make_conn()
+
+    iso_file = tmp_path / "test.iso"
+    iso_file.write_text("")
+    iso_path = str(iso_file.resolve())
+
+    transient_domain = MagicMock()
+    transient_domain.XMLDesc.return_value = _iso_domain_xml(iso_path)
+    conn.createXML.return_value = transient_domain
+    conn.defineXML.return_value = persistent_domain
+
+    with patch("libvirt.open", return_value=conn):
+        return LibvirtIsoRunner(
+            iso=str(iso_file),
+            suite_name="test",
+            test_name="basic",
+            keep=True,
+            pool_dir=tmp_path,
+        )
+
+
+def test_close_gracefully_shuts_down_domain_when_keep_is_true(tmp_path: Path) -> None:
+    persistent_domain = MagicMock()
+    # Active on the initial check, then powered off during the poll loop.
+    persistent_domain.isActive.side_effect = [1, 0]
+
+    runner = _make_keep_runner(tmp_path, persistent_domain)
+    runner.close()
+
+    persistent_domain.shutdown.assert_called_once()
+    persistent_domain.destroy.assert_not_called()
+    persistent_domain.undefine.assert_not_called()
+
+
+def test_close_skips_shutdown_when_domain_already_inactive(tmp_path: Path) -> None:
+    persistent_domain = MagicMock()
+    persistent_domain.isActive.return_value = 0
+
+    runner = _make_keep_runner(tmp_path, persistent_domain)
+    runner.close()
+
+    persistent_domain.shutdown.assert_not_called()
+    persistent_domain.destroy.assert_not_called()
+    persistent_domain.undefine.assert_not_called()
+
+
+def test_close_forces_destroy_when_graceful_shutdown_times_out(
+    tmp_path: Path,
+) -> None:
+    persistent_domain = MagicMock()
+    # The guest never powers off, so every isActive check reports active.
+    persistent_domain.isActive.return_value = 1
+
+    runner = _make_keep_runner(tmp_path, persistent_domain)
+    # Advance the monotonic clock past the deadline after one poll iteration
+    # so the timeout branch fires without real sleeping.
+    with (
+        patch(
+            "ubuntu_gui_testing_runner.base.time.monotonic",
+            side_effect=[0.0, 0.0, 999.0],
+        ),
+        patch("ubuntu_gui_testing_runner.base.time.sleep"),
+    ):
+        runner.close()
+
+    persistent_domain.shutdown.assert_called_once()
+    persistent_domain.destroy.assert_called_once()
+    persistent_domain.undefine.assert_not_called()
+
+
+def test_close_forces_destroy_when_graceful_shutdown_errors(tmp_path: Path) -> None:
+    persistent_domain = MagicMock()
+    persistent_domain.isActive.return_value = 1
+    persistent_domain.shutdown.side_effect = libvirt.libvirtError("boom")
+
+    runner = _make_keep_runner(tmp_path, persistent_domain)
+    runner.close()
+
+    persistent_domain.shutdown.assert_called_once()
+    persistent_domain.destroy.assert_called_once()
     persistent_domain.undefine.assert_not_called()
 
 
