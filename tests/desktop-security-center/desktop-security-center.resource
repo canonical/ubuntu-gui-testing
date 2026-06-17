@@ -32,6 +32,8 @@ Open Disk Encryption Tab
 
 Open Camera Snaps Page
     [Documentation]    Opens the camera interface snaps page on the App Permissions page
+    Move Pointer To App permissions
+    EzClick
     Move Pointer To ${Y}/generic/camera-icon.png
     EzClick
     Match Text    "Allow apps to access your cameras."
@@ -47,7 +49,7 @@ Check Recovery Key Success
     Move Pointer To ${Y}/generic/check-recovery-key-button.png
     EzClick
     Authenticate With Polkit
-    Match    ${Y}/generic/check-recovery-key-success.png
+    Match Text  "Recovery key works"
 
 Change Passphrase
     [Documentation]    Changes the systems passphrase from the Security Centers Disk Encryption Page
@@ -65,7 +67,7 @@ Change Passphrase
     Type String    ${new}
     Move Pointer To ${Y}/generic/change-button.png
     EzClick
-    Match    ${Y}/generic/change-passphrase-success.png
+    Match Text  "successfully updated"
 
 Boot With Passphrase
     [Documentation]    Boot the system using a passphrase
@@ -84,7 +86,7 @@ Check Recovery Key Failure
     Move Pointer To ${Y}/generic/check-recovery-key-button.png
     EzClick
     Authenticate With Polkit
-    Match    ${Y}/generic/check-recovery-key-failure.png
+    Match Text  "Recovery key does not work"
 
 Replace Recovery Key
     [Documentation]    Replace the systems recovery key, validating it is saved to a file
@@ -111,7 +113,7 @@ Replace Recovery Key
     EzCLick
     Move Pointer To ${Y}/generic/replace-recovery-key-button.png
     EzClick
-    Match    ${Y}/generic/replace-recovery-key-success.png
+    Match Text  "Recovery key replaced"
     Move Pointer To ${Y}/generic/cross-button.png
     EzCLick
     Move Pointer To ${Y}/generic/cross-button.png
