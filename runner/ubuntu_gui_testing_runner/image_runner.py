@@ -11,6 +11,7 @@ import libvirt  # type: ignore[import-untyped]
 
 from ubuntu_gui_testing_runner.base import (
     _BaseLibvirtRunner,
+    resolve_latest_domain,
 )
 from ubuntu_gui_testing_runner.constants import (
     DEFAULT_IMAGE_DOMAIN_TEMPLATE,
@@ -28,15 +29,23 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
 
     def __init__(
         self,
-        source_domain: str,
         suite_name: str,
         test_name: str,
+        source_domain: str | None = None,
+        source_domain_prefix: str | None = None,
         domain_template: Path | None = None,
         overlay_template: Path | None = None,
         mount_source_domain: str | None = None,
         **kwargs: Any,
     ) -> None:
-        self.source_domain_name = source_domain
+        if (source_domain is None) == (source_domain_prefix is None):
+            raise ValueError(
+                "Exactly one of 'source_domain' or 'source_domain_prefix' "
+                "must be provided"
+            )
+        self._source_domain = source_domain
+        self._source_domain_prefix = source_domain_prefix
+        self.source_domain_name: str = source_domain or ""
         self.recovery_key: str | None = None
         self.mount_source_domain = mount_source_domain
 
@@ -62,6 +71,10 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
 
     def _extract_source_paths(self) -> None:
         """Extract disk image and NVRAM paths from the source domain XML."""
+        if self._source_domain_prefix is not None:
+            self.source_domain_name = resolve_latest_domain(
+                self.conn, self._source_domain_prefix
+            )
         try:
             source = self.conn.lookupByName(self.source_domain_name)
         except libvirt.libvirtError as err:
