@@ -50,6 +50,13 @@ def parse_args() -> argparse.Namespace:
         "--source-domain",
         help="Name of an existing libvirt domain to clone from",
     )
+    source.add_argument(
+        "--source-domain-prefix",
+        help=(
+            "Clone from the most recent libvirt domain whose name starts "
+            "with this prefix (e.g. 'ugt-<suite>-<test>')"
+        ),
+    )
 
     libvirt = parser.add_argument_group("libvirt connection")
     libvirt.add_argument(

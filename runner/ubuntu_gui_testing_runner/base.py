@@ -3,9 +3,10 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import re
 import time
 from abc import abstractmethod
-from datetime import date
+from datetime import UTC, datetime
 from pathlib import Path
 
 import defusedxml.ElementTree as ET
@@ -23,6 +24,29 @@ from ubuntu_gui_testing_runner.constants import (
 from ubuntu_gui_testing_runner.runner import Runner
 
 LOGGER = logging.getLogger(__name__)
+
+
+def domain_name_prefix(suite_name: str, test_name: str) -> str:
+    """Return the stable domain-name prefix for a suite/test pair."""
+    return f"ugt-{suite_name}-{test_name}"
+
+
+def resolve_latest_domain(conn: libvirt.virConnect, prefix: str) -> str:
+    """Return the most recent domain name produced for ``prefix``.
+
+    Domains are named ``<prefix>-<UTC timestamp>[-N]``; the timestamp is
+    fixed-width and sortable, so the lexicographically greatest matching
+    name is also the most recent. Raises ``RuntimeError`` if none match.
+    """
+    pattern = re.compile(rf"^{re.escape(prefix)}-\d{{8}}T\d{{6}}Z(?:-\d+)?$")
+    matches: list[str] = [
+        str(domain.name())
+        for domain in conn.listAllDomains()
+        if pattern.match(domain.name())
+    ]
+    if not matches:
+        raise RuntimeError(f"No domain found matching prefix '{prefix}'")
+    return max(matches)
 
 
 class _BaseLibvirtRunner(Runner):
@@ -258,7 +282,9 @@ class _BaseLibvirtRunner(Runner):
         return asyncio.run(self._run(suite, test))
 
     def _generate_domain_name(self, suite_name: str, test_name: str) -> str:
-        base = f"ugt-{suite_name}-{test_name}-{date.today().isoformat()}"
+        prefix = domain_name_prefix(suite_name, test_name)
+        timestamp = datetime.now(tz=UTC).strftime("%Y%m%dT%H%M%SZ")
+        base = f"{prefix}-{timestamp}"
         if not self._domain_exists(base):
             return base
         run = 2
