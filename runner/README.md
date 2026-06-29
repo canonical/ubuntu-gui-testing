@@ -32,6 +32,7 @@ ubuntu-gui-testing-runner \
 | - | - |
 | `--suite` | Path to the test suite (required) |
 | `--test` | Name of the test to run (required) |
+| `--robot-variable NAME:VALUE` | Robot variable passed to YARF; repeatable |
 | `--iso` | Path to an ISO for installation |
 | `--source-domain` | Existing libvirt domain to clone from |
 | `--keep` | Keep the VM and resources after the run |

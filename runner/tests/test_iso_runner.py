@@ -420,6 +420,31 @@ def test_run_yarf_collects_logs_after_normal_reboot(
         runner.close()
 
 
+def test_run_yarf_passes_robot_variables(tmp_path: Path) -> None:
+    runner = _make_runner_for_lifecycle(tmp_path)
+    runner.robot_variables = {"FOO": "bar", "CID": "999"}
+    try:
+        mock_process = AsyncMock()
+        mock_process.wait = AsyncMock(return_value=0)
+        mock_process.returncode = 0
+
+        with (
+            patch.object(runner, "_spawn_yarf", return_value=mock_process) as spawn,
+            patch.object(runner, "_handle_reboot", return_value=None),
+            patch("ubuntu_gui_testing_runner.iso_runner.collect_installer_logs"),
+        ):
+            asyncio.run(runner._run_yarf("suite", "test", 3, 5900))
+
+        spawn.assert_called_once_with(
+            "suite",
+            "test",
+            5900,
+            robot_variables={"FOO": "bar", "CID": "3"},
+        )
+    finally:
+        runner.close()
+
+
 def test_run_yarf_cancels_reboot_watcher_if_yarf_exits_early(
     tmp_path: Path,
 ) -> None:

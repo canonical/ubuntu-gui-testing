@@ -32,6 +32,7 @@ class _BaseLibvirtRunner(Runner):
         self,
         suite_name: str,
         test_name: str,
+        robot_variables: dict[str, str] | None = None,
         pool_template: Path | None = None,
         artifacts_dir: Path | None = None,
         keep: bool = False,
@@ -49,6 +50,7 @@ class _BaseLibvirtRunner(Runner):
             if pool_template is not None
             else DEFAULT_POOL_TEMPLATE
         )
+        self.robot_variables = robot_variables or {}
         self.artifacts_path = (
             artifacts_dir.resolve()
             if artifacts_dir is not None

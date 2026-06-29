@@ -134,7 +134,10 @@ class LibvirtIsoRunner(_BaseLibvirtRunner):
             suite,
             test,
             vnc_port,
-            robot_variables={"CID": str(vsock_cid)},
+            robot_variables={
+                **self.robot_variables,
+                "CID": str(vsock_cid),
+            },
         )
         try:
             async with asyncio.TaskGroup() as tg:

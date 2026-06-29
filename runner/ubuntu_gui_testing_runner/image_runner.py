@@ -190,7 +190,10 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
     async def _run_yarf(
         self, suite: str, test: str, vsock_cid: int, vnc_port: int
     ) -> int:
-        robot_variables = {"CID": str(vsock_cid)}
+        robot_variables = {
+            **self.robot_variables,
+            "CID": str(vsock_cid),
+        }
         if self.recovery_key:
             robot_variables["RECOVERY_KEY"] = self.recovery_key
             LOGGER.info(

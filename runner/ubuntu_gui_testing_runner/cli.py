@@ -1,5 +1,7 @@
 import argparse
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Any, cast
 
 from ubuntu_gui_testing_runner.constants import (
     DEFAULT_ARTIFACTS_DIR,
@@ -15,6 +17,34 @@ from ubuntu_gui_testing_runner.constants import (
 )
 
 
+class _KeyValueToDictAction(argparse.Action):
+    """Accumulate parsed key/value entries into a destination dictionary."""
+
+    _ERROR_MESSAGE = "Expected NAME:VALUE format"
+
+    def __call__(
+        self,
+        _parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: str | Sequence[Any] | None,
+        _option_string: str | None = None,
+    ) -> None:
+        if not isinstance(values, str):
+            raise argparse.ArgumentError(self, self._ERROR_MESSAGE)
+
+        name, sep, value = values.partition(":")
+        if sep == "" or name == "":
+            raise argparse.ArgumentError(self, self._ERROR_MESSAGE)
+
+        current_raw = getattr(namespace, self.dest, None)
+        current = (
+            cast(dict[str, str], current_raw) if isinstance(current_raw, dict) else {}
+        )
+
+        current[name] = value
+        setattr(namespace, self.dest, current)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -26,6 +56,14 @@ def parse_args() -> argparse.Namespace:
         "--test",
         required=True,
         help="Name of the test to run",
+    )
+    parser.add_argument(
+        "--robot-variable",
+        action=_KeyValueToDictAction,
+        dest="robot_variables",
+        default={},
+        metavar="NAME:VALUE",
+        help=("Robot variable to pass to yarf. Can be specified multiple times."),
     )
     parser.add_argument(
         "--keep",

@@ -84,3 +84,47 @@ def test_keep_flag_set_to_true(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     args = parse_args()
     assert args.keep is True
+
+
+def test_robot_variable_can_be_passed_multiple_times(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "runner",
+            "--suite",
+            "s",
+            "--test",
+            "t",
+            "--iso",
+            "a.iso",
+            "--robot-variable",
+            "FOO:bar",
+            "--robot-variable",
+            "CID:123",
+        ],
+    )
+    args = parse_args()
+    assert args.robot_variables == {"FOO": "bar", "CID": "123"}
+
+
+def test_robot_variable_requires_name_value_separator(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "runner",
+            "--suite",
+            "s",
+            "--test",
+            "t",
+            "--iso",
+            "a.iso",
+            "--robot-variable",
+            "INVALID",
+        ],
+    )
+    with pytest.raises(SystemExit):
+        parse_args()

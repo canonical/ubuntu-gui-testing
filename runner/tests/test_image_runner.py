@@ -344,6 +344,49 @@ def test_run_yarf_passes_recovery_key_variable_when_present(tmp_path: Path) -> N
             runner.close()
 
 
+def test_run_yarf_passes_robot_variables(tmp_path: Path) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+
+    source_xml = SOURCE_DOMAIN_XML_WITH_RECOVERY_KEY.replace(
+        "/pool/source-VARS.fd", str(nvram_source)
+    )
+    conn = _make_conn(source_xml=source_xml)
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with patch("libvirt.open", return_value=conn):
+        runner = LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+            robot_variables={"FOO": "bar", "CID": "999"},
+        )
+        try:
+            mock_process = AsyncMock()
+            mock_process.wait = AsyncMock(return_value=0)
+            mock_process.returncode = 0
+            with patch.object(
+                runner, "_spawn_yarf", return_value=mock_process
+            ) as spawn:
+                asyncio.run(runner._run_yarf("suite", "test", 3, 5901))
+
+            spawn.assert_called_once_with(
+                "suite",
+                "test",
+                5901,
+                robot_variables={
+                    "FOO": "bar",
+                    "CID": "3",
+                    "RECOVERY_KEY": "12345-67890-11111-22222-33333-44444-55555-66666",
+                },
+            )
+        finally:
+            runner.close()
+
+
 def test_logs_when_recovery_key_metadata_missing(
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,
