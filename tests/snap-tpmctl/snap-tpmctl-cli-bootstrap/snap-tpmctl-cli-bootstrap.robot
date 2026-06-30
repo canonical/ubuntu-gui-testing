@@ -11,9 +11,10 @@ ${Z}                ${CURDIR}
 
 
 *** Test Cases ***
-Unlock System With Passphrase
-    [Documentation]    Unlock the system with passphrase
-    Answer Prompt    Enter passphrase or recovery key    ${PASSPHRASE}
+# NOTE: add this when support for TPM/FDE passprahse is re-enabled during installtion
+# Unlock System With Passphrase
+#     [Documentation]    Unlock the system with passphrase
+#     Answer Prompt    Enter passphrase or recovery key    ${PASSPHRASE}
 
 Log In
     [Documentation]    Log in to desktop session

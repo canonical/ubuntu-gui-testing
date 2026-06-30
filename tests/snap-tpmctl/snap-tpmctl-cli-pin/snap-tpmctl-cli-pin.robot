@@ -2,7 +2,7 @@
 Documentation       PIN behaviour tests for snap-tpmctl CLI
 
 Resource            ${Z}/../snap-tpmctl.resource
-Suite Setup         Bootstrap And Remove Password
+Suite Setup         Bootstrap Snap Tpmctl CLI
 
 Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-word
 
