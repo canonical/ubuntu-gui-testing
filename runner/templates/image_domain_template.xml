@@ -38,6 +38,7 @@
       <source file="{disk}"/>
       <target dev="vda" bus="virtio"/>
     </disk>
+    {usb_disk}
     <interface type="user">
       <model type="virtio"/>
     </interface>
