@@ -26,11 +26,11 @@ def test_emits_template_and_project(tmp_path: Path) -> None:
     config = _config(
         tmp_path,
         """
+release: resolute
 suites:
   s:
     tests:
-      t:
-        iso: x.iso
+      t: {}
 """,
     )
 
@@ -48,11 +48,11 @@ def test_job_template_holds_shared_scm_shell_and_triggers(
     config = _config(
         tmp_path,
         """
+release: resolute
 suites:
   s:
     tests:
-      t:
-        iso: x.iso
+      t: {}
 """,
     )
 
@@ -80,11 +80,11 @@ def test_job_template_declares_yarf_ref_parameter(tmp_path: Path) -> None:
     config = _config(
         tmp_path,
         """
+release: resolute
 suites:
   s:
     tests:
-      t:
-        iso: x.iso
+      t: {}
 """,
     )
 
@@ -105,11 +105,11 @@ def test_job_template_first_builder_sets_up_yarf(tmp_path: Path) -> None:
     config = _config(
         tmp_path,
         """
+release: resolute
 suites:
   s:
     tests:
-      t:
-        iso: x.iso
+      t: {}
 """,
     )
 
@@ -126,11 +126,11 @@ def test_job_template_archives_runner_artifacts(tmp_path: Path) -> None:
     config = _config(
         tmp_path,
         """
+release: resolute
 suites:
   s:
     tests:
-      t:
-        iso: x.iso
+      t: {}
 """,
     )
 
@@ -145,11 +145,11 @@ def test_runner_builder_prepends_yarf_venv_to_path(tmp_path: Path) -> None:
     config = _config(
         tmp_path,
         """
+release: resolute
 suites:
   s:
     tests:
-      t:
-        iso: x.iso
+      t: {}
 """,
     )
 
@@ -163,11 +163,11 @@ def test_iso_producer_instance(tmp_path: Path) -> None:
     config = _config(
         tmp_path,
         """
+release: resolute
 suites:
   desktop-installer:
     tests:
-      resolute.entire-disk:
-        iso: ubuntu-26.04-desktop-amd64.iso
+      resolute.entire-disk: {}
   firefox-example:
     tests:
       firefox-example-basic:
@@ -179,7 +179,11 @@ suites:
         ("desktop-installer", "resolute.entire-disk")
     ]
 
-    assert instance["args"] == ("--iso /isos/ubuntu-26.04-desktop-amd64.iso \\\n--keep")
+    expected = (
+        "--iso /srv/data/.rf_image_cache/resolute/resolute-desktop-amd64.iso"
+        + " \\\n--keep"
+    )
+    assert instance["args"] == expected
     assert instance["triggers"] == []
 
 
@@ -187,11 +191,11 @@ def test_dependency_consumer_instance(tmp_path: Path) -> None:
     config = _config(
         tmp_path,
         """
+release: resolute
 suites:
   desktop-installer:
     tests:
-      resolute.entire-disk:
-        iso: x.iso
+      resolute.entire-disk: {}
   firefox-example:
     tests:
       firefox-example-basic:
@@ -220,16 +224,19 @@ def test_standalone_iso_instance_has_no_keep_or_triggers(tmp_path: Path) -> None
     config = _config(
         tmp_path,
         """
+release: resolute
 suites:
   s:
     tests:
-      only:
-        iso: x.iso
+      only: {}
 """,
     )
 
     instance = _instances(generate_jobs(config))[("s", "only")]
 
-    assert instance["args"] == "--iso /isos/x.iso"
+    assert (
+        instance["args"]
+        == "--iso /srv/data/.rf_image_cache/resolute/resolute-desktop-amd64.iso"
+    )
     assert "--keep" not in instance["args"]
     assert instance["triggers"] == []

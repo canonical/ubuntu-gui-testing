@@ -15,7 +15,6 @@ class GeneratorError(Exception):
 class Test:
     suite: str
     name: str
-    iso: str | None
     depends_on: str | None
 
     @property
@@ -29,6 +28,7 @@ class Test:
 
 @dataclass(frozen=True)
 class Config:
+    release: str
     tests: tuple[Test, ...]
 
     def is_producer(self, test: Test) -> bool:
@@ -48,15 +48,18 @@ class Config:
 
 def load_config(path: Path) -> Config:
     raw = yaml.safe_load(path.read_text())
-    tests = _parse(raw)
+    release, tests = _parse(raw)
     _validate_references(tests)
     _validate_acyclic(tests)
-    return Config(tests=tuple(tests))
+    return Config(release=release, tests=tuple(tests))
 
 
-def _parse(raw: Any) -> list[Test]:
+def _parse(raw: Any) -> tuple[str, list[Test]]:
     if not isinstance(raw, dict) or "suites" not in raw:
         raise GeneratorError("Top-level document must be a mapping with 'suites'")
+    release = raw.get("release")
+    if not isinstance(release, str):
+        raise GeneratorError("Top-level 'release' must be a string")
     suites = raw["suites"]
     if not isinstance(suites, dict):
         raise GeneratorError("'suites' must be a mapping of suite names")
@@ -70,24 +73,19 @@ def _parse(raw: Any) -> list[Test]:
             raise GeneratorError(f"'tests' in suite '{suite_name}' must be a mapping")
         for test_name, test_body in suite_tests.items():
             tests.append(_parse_test(suite_name, test_name, test_body))
-    return tests
+    return release, tests
 
 
 def _parse_test(suite_name: str, test_name: str, body: Any) -> Test:
     body = body or {}
     if not isinstance(body, dict):
         raise GeneratorError(f"Test '{suite_name}/{test_name}' must be a mapping")
-    iso = body.get("iso")
+    if "iso" in body:
+        raise GeneratorError(f"Test '{suite_name}/{test_name}' must not define 'iso'")
     depends_on = body.get("depends-on")
-    if (iso is None) == (depends_on is None):
-        raise GeneratorError(
-            f"Test '{suite_name}/{test_name}' must define exactly one of "
-            "'iso' or 'depends-on'"
-        )
     return Test(
         suite=suite_name,
         name=test_name,
-        iso=iso,
         depends_on=depends_on,
     )
 

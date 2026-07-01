@@ -20,11 +20,11 @@ def test_run_writes_output_file(tmp_path: Path) -> None:
     input_file = tmp_path / "input.yaml"
     input_file.write_text(
         """
+release: resolute
 suites:
   desktop-installer:
     tests:
-      resolute.entire-disk:
-        iso: ubuntu-26.04-desktop-amd64.iso
+      resolute.entire-disk: {}
   firefox-example:
     tests:
       firefox-example-basic:
@@ -50,11 +50,11 @@ def test_run_writes_to_stdout(
     input_file = tmp_path / "input.yaml"
     input_file.write_text(
         """
+release: resolute
 suites:
   s:
     tests:
-      t:
-        iso: x.iso
+      t: {}
 """
     )
 
@@ -73,12 +73,12 @@ def test_run_returns_error_on_invalid_config(
     input_file = tmp_path / "input.yaml"
     input_file.write_text(
         """
+release: resolute
 suites:
   s:
     tests:
       t:
         iso: x.iso
-        depends-on: s/other
 """
     )
 
@@ -86,4 +86,4 @@ suites:
 
     assert exit_code == 1
     err = capsys.readouterr().err
-    assert "exactly one" in err
+    assert "iso" in err
