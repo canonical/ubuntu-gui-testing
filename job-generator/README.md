@@ -30,6 +30,10 @@ The top-level `release` field is required and must be a YAML string. It selects
 the ISO used by tests that do not define `depends-on`. Those producer tests boot from
 `/srv/data/.rf_image_cache/<release>/<release>-desktop-amd64.iso` on the agent.
 
+Generated ISO-backed jobs first invoke the externally provided
+`dl-iso-to-cache` builder with the configured `release`, so the expected ISO is
+available in the cache before the runner starts.
+
 Each test may define:
 
 - `depends-on: <suite>/<test>` — clone the libvirt domain produced by another

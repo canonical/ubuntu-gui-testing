@@ -18,7 +18,7 @@ _YARF_SETUP = (
     'cd "$WORKSPACE/yarf" && uv sync\n'
 )
 
-_SHELL = (
+_RUN_TESTS = (
     'export PATH="$WORKSPACE/yarf/.venv/bin:$PATH"\n'
     "cd runner && uv run ubuntu-gui-testing-runner \\\n"
     "  --suite ../tests/{suite} \\\n"
@@ -29,13 +29,17 @@ _SHELL = (
 
 def generate_jobs(config: Config) -> list[dict[str, Any]]:
     return [
-        {"job-template": _job_template()},
+        {"builder": _run_tests_builder()},
+        {"publisher": _artifacts_publisher()},
+        {"job-template": _job_template("ugt-iso", _iso_builders(config.release))},
+        {"job-template": _job_template("ugt-source-domain", _source_domain_builders())},
         {"project": _project(config)},
     ]
 
 
-def _job_template() -> dict[str, Any]:
+def _job_template(template_id: str, builders: list[Any]) -> dict[str, Any]:
     return {
+        "id": template_id,
         "name": "ugt-{suite}-{test}",
         "scm": [{"git": {"url": REPO_URL, "branches": [BRANCH]}}],
         "parameters": [
@@ -48,10 +52,41 @@ def _job_template() -> dict[str, Any]:
             }
         ],
         "triggers": "{obj:triggers}",
+        "builders": builders,
+        "publishers": ["publish-artifacts"],
+    }
+
+
+def _iso_builders(release: str) -> list[Any]:
+    return [
+        {"dl-iso-to-cache": {"release": release}},
+        _run_tests_reference(),
+    ]
+
+
+def _source_domain_builders() -> list[Any]:
+    return [
+        _run_tests_reference(),
+    ]
+
+
+def _run_tests_reference() -> dict[str, dict[str, str]]:
+    return {"run-tests": {"suite": "{suite}", "test": "{test}", "args": "{args}"}}
+
+
+def _run_tests_builder() -> dict[str, Any]:
+    return {
+        "name": "run-tests",
         "builders": [
             {"shell": _YARF_SETUP},
-            {"shell": _SHELL},
+            {"shell": _RUN_TESTS},
         ],
+    }
+
+
+def _artifacts_publisher() -> dict[str, Any]:
+    return {
+        "name": "publish-artifacts",
         "publishers": [
             {"archive": {"artifacts": ARTIFACTS_GLOB, "allow-empty": True}},
         ],
@@ -59,19 +94,23 @@ def _job_template() -> dict[str, Any]:
 
 
 def _project(config: Config) -> dict[str, Any]:
+    jobs: list[dict[str, Any]] = []
+    for test in config.tests:
+        template_name, instance = _instance(config, test)
+        jobs.append({template_name: instance})
     return {
         "name": "ugt",
-        "jobs": [
-            {"ugt-{suite}-{test}": _instance(config, test)} for test in config.tests
-        ],
+        "jobs": jobs,
     }
 
 
-def _instance(config: Config, test: Test) -> dict[str, Any]:
+def _instance(config: Config, test: Test) -> tuple[str, dict[str, Any]]:
     producer = config.producer_of(test)
     if producer is not None:
+        template_name = "ugt-source-domain"
         source = f"--source-domain-prefix {producer.job_name}"
     else:
+        template_name = "ugt-iso"
         iso = f"{ISO_CACHE_DIR}/{config.release}/{config.release}-desktop-amd64.iso"
         source = f"--iso {iso}"
 
@@ -83,9 +122,10 @@ def _instance(config: Config, test: Test) -> dict[str, Any]:
     if producer is not None:
         triggers = [{"reverse": {"jobs": producer.job_name, "result": "success"}}]
 
-    return {
+    instance = {
         "suite": test.suite,
         "test": test.name,
         "args": args,
         "triggers": triggers,
     }
+    return template_name, instance
