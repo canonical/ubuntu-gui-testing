@@ -15,20 +15,23 @@ Omit `-o` to write to stdout.
 ### Input format
 
 ```yaml
+release: resolute
 suites:
   desktop-installer:
     tests:
-      resolute.entire-disk:
-        iso: ubuntu-26.04-desktop-amd64.iso
+      resolute.entire-disk: {}
   firefox-example:
     tests:
       firefox-example-basic:
         depends-on: desktop-installer/resolute.entire-disk
 ```
 
-Each test defines exactly one of:
+The top-level `release` field is required and must be a YAML string. It selects
+the ISO used by tests that do not define `depends-on`. Those producer tests boot from
+`/srv/data/.rf_image_cache/<release>/<release>-desktop-amd64.iso` on the agent.
 
-- `iso: <filename>` — boot from an ISO (resolved against `/isos` on the agent).
+Each test may define:
+
 - `depends-on: <suite>/<test>` — clone the libvirt domain produced by another
   test. The producer job runs with `--keep` so its domain survives, and a
   `reverse` trigger starts the consumer job whenever the producer succeeds. The

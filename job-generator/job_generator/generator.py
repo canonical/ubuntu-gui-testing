@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from job_generator.schema import Config, GeneratorError, Test
+from job_generator.schema import Config, Test
 
 REPO_URL = "https://github.com/canonical/ubuntu-gui-testing/"
 BRANCH = "main"
-ISO_DIR = "/isos"
+ISO_CACHE_DIR = "/srv/data/.rf_image_cache"
 YARF_REPO_URL = "https://github.com/canonical/yarf"
 YARF_DEFAULT_REF = "main"
 ARTIFACTS_GLOB = "runner/artifacts/**"
@@ -69,14 +69,11 @@ def _project(config: Config) -> dict[str, Any]:
 
 def _instance(config: Config, test: Test) -> dict[str, Any]:
     producer = config.producer_of(test)
-    if test.iso is not None:
-        source = f"--iso {ISO_DIR}/{test.iso}"
-    elif producer is not None:
+    if producer is not None:
         source = f"--source-domain-prefix {producer.job_name}"
     else:
-        raise GeneratorError(
-            f"Test '{test.key}' has neither 'iso' nor a resolvable producer"
-        )
+        iso = f"{ISO_CACHE_DIR}/{config.release}/{config.release}-desktop-amd64.iso"
+        source = f"--iso {iso}"
 
     args = source
     if config.is_producer(test):

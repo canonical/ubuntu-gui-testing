@@ -11,15 +11,15 @@ def _write(tmp_path: Path, content: str) -> Path:
     return path
 
 
-def test_loads_iso_and_dependency_tests(tmp_path: Path) -> None:
+def test_loads_release_and_dependency_tests(tmp_path: Path) -> None:
     path = _write(
         tmp_path,
         """
+release: resolute
 suites:
   desktop-installer:
     tests:
-      resolute.entire-disk:
-        iso: ubuntu-26.04-desktop-amd64.iso
+      resolute.entire-disk: {}
   firefox-example:
     tests:
       firefox-example-basic:
@@ -30,25 +30,24 @@ suites:
     config = load_config(path)
 
     assert isinstance(config, Config)
+    assert config.release == "resolute"
     by_key = {t.key: t for t in config.tests}
     producer = by_key["desktop-installer/resolute.entire-disk"]
     consumer = by_key["firefox-example/firefox-example-basic"]
-    assert producer.iso == "ubuntu-26.04-desktop-amd64.iso"
     assert producer.depends_on is None
     assert producer.job_name == "ugt-desktop-installer-resolute.entire-disk"
     assert consumer.depends_on == "desktop-installer/resolute.entire-disk"
-    assert consumer.iso is None
 
 
 def test_producer_and_consumer_relationships(tmp_path: Path) -> None:
     path = _write(
         tmp_path,
         """
+release: resolute
 suites:
   desktop-installer:
     tests:
-      resolute.entire-disk:
-        iso: x.iso
+      resolute.entire-disk: {}
   firefox-example:
     tests:
       firefox-example-basic:
@@ -67,23 +66,7 @@ suites:
     assert config.consumers_of(consumer) == []
 
 
-def test_error_when_both_sources(tmp_path: Path) -> None:
-    path = _write(
-        tmp_path,
-        """
-suites:
-  s:
-    tests:
-      t:
-        iso: x.iso
-        depends-on: s/other
-""",
-    )
-    with pytest.raises(GeneratorError, match="exactly one"):
-        load_config(path)
-
-
-def test_error_when_no_source(tmp_path: Path) -> None:
+def test_error_when_release_missing(tmp_path: Path) -> None:
     path = _write(
         tmp_path,
         """
@@ -93,7 +76,38 @@ suites:
       t: {}
 """,
     )
-    with pytest.raises(GeneratorError, match="exactly one"):
+    with pytest.raises(GeneratorError, match="release"):
+        load_config(path)
+
+
+def test_error_when_release_not_string(tmp_path: Path) -> None:
+    path = _write(
+        tmp_path,
+        """
+release: 2604
+suites:
+  s:
+    tests:
+      t: {}
+""",
+    )
+    with pytest.raises(GeneratorError, match="release"):
+        load_config(path)
+
+
+def test_error_when_test_defines_iso(tmp_path: Path) -> None:
+    path = _write(
+        tmp_path,
+        """
+release: resolute
+suites:
+  s:
+    tests:
+      t:
+        iso: x.iso
+""",
+    )
+    with pytest.raises(GeneratorError, match="iso"):
         load_config(path)
 
 
@@ -101,6 +115,7 @@ def test_error_when_dangling_reference(tmp_path: Path) -> None:
     path = _write(
         tmp_path,
         """
+release: resolute
 suites:
   s:
     tests:
@@ -116,6 +131,7 @@ def test_error_on_cycle(tmp_path: Path) -> None:
     path = _write(
         tmp_path,
         """
+release: resolute
 suites:
   s:
     tests:
