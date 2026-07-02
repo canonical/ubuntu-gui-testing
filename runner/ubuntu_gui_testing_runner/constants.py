@@ -6,7 +6,7 @@ _TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "templates"
 
 DEFAULT_CONNECTION_URI = "qemu:///session"
 DEFAULT_POOL_NAME = "ubuntu-gui-testing"
-DEFAULT_POOL_DIR = Path("/pool")
+DEFAULT_POOL_DIR = Path("/srv/data/ugt-storage-pool")
 DEFAULT_POOL_TEMPLATE = _TEMPLATE_DIR / "pool_template.xml"
 DEFAULT_ARTIFACTS_DIR = Path("./artifacts")
 DEFAULT_ISO_DOMAIN_TEMPLATE = _TEMPLATE_DIR / "iso_domain_template.xml"
