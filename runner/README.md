@@ -26,6 +26,23 @@ ubuntu-gui-testing-runner \
   --source-domain ugt-desktop-installer-resolute.entire-disk-2026-06-01
 ```
 
+### From an existing domain with source disk mounted as USB
+
+When cloning from an existing domain, you can optionally attach a second overlay
+of the same source image as a USB disk. This is useful for tests that need to
+mount or unlock a secondary device.
+
+```bash
+ubuntu-gui-testing-runner \
+  --suite tests/snap-tpmctl \
+  --test snap-tpmctl-mount \
+  --source-domain ugt-desktop-installer-resolute.entire-disk-2026-06-01 \
+  --mount-source-domain /dev/sda5
+```
+
+If `--mount-source-domain` is passed without a value, the default device is
+`/dev/sda`.
+
 ### Options
 
 | Flag | Description |
@@ -34,6 +51,7 @@ ubuntu-gui-testing-runner \
 | `--test` | Name of the test to run (required) |
 | `--iso` | Path to an ISO for installation |
 | `--source-domain` | Existing libvirt domain to clone from |
+| `--mount-source-domain [DEVICE]` | Attach a second overlay of the source domain as a USB disk and pass `DEVICE` to Robot variables |
 | `--keep` | Keep the VM and resources after the run |
 | `--connection-uri` | Libvirt connection URI (default: `qemu:///session`) |
 | `--pool-name` | Storage pool name (default: `ubuntu-gui-testing`) |

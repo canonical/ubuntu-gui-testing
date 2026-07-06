@@ -38,6 +38,7 @@ def main() -> None:
             keep=args.keep,
             domain_template=args.domain_template,
             overlay_template=args.overlay_template,
+            mount_source_domain=args.mount_source_domain,
             pool_template=args.pool_template,
             artifacts_dir=args.artifacts_dir,
             connection_uri=args.connection_uri,

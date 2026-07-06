@@ -344,6 +344,72 @@ def test_run_yarf_passes_recovery_key_variable_when_present(tmp_path: Path) -> N
             runner.close()
 
 
+def test_run_yarf_passes_device_when_mount_source_domain_is_enabled(
+    tmp_path: Path,
+) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+
+    source_xml = SOURCE_DOMAIN_XML.replace("/pool/source-VARS.fd", str(nvram_source))
+    conn = _make_conn(source_xml=source_xml)
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with patch("libvirt.open", return_value=conn):
+        runner = LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+            mount_source_domain="/dev/sdb",
+        )
+        try:
+            mock_process = AsyncMock()
+            mock_process.wait = AsyncMock(return_value=0)
+            mock_process.returncode = 0
+            with patch.object(
+                runner, "_spawn_yarf", return_value=mock_process
+            ) as spawn:
+                asyncio.run(runner._run_yarf("suite", "test", 3, 5901))
+
+            spawn.assert_called_once_with(
+                "suite",
+                "test",
+                5901,
+                robot_variables={"CID": "3", "DEVICE": "/dev/sdb"},
+            )
+        finally:
+            runner.close()
+
+
+def test_mount_source_domain_uses_matching_usb_target(
+    tmp_path: Path,
+) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+
+    source_xml = SOURCE_DOMAIN_XML.replace("/pool/source-VARS.fd", str(nvram_source))
+    conn = _make_conn(source_xml=source_xml)
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with patch("libvirt.open", return_value=conn):
+        runner = LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+            mount_source_domain="/dev/sdb1",
+        )
+        try:
+            domain_xml = conn.defineXML.call_args.args[0]
+            assert '<target dev="sdb" bus="usb"/>' in domain_xml
+        finally:
+            runner.close()
+
+
 def test_logs_when_recovery_key_metadata_missing(
     tmp_path: Path,
     caplog: pytest.LogCaptureFixture,

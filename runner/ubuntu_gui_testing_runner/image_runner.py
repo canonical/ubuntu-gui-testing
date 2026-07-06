@@ -33,10 +33,12 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
         test_name: str,
         domain_template: Path | None = None,
         overlay_template: Path | None = None,
+        mount_source_domain: str | None = None,
         **kwargs: Any,
     ) -> None:
         self.source_domain_name = source_domain
         self.recovery_key: str | None = None
+        self.mount_source_domain = mount_source_domain
 
         self.overlay_template_path = (
             overlay_template.resolve()
@@ -144,12 +146,24 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
         )
 
     def _create_overlay(self) -> None:
-        """Create a qcow2 overlay backed by the original image."""
+        """Create qcow2 overlays backed by the original image."""
         volume_xml = self._render_template(
             self.overlay_template_path,
             {"name": self.disk_volume_name, "backing_image": str(self.image_path)},
         )
         self._disk_volume = self.pool.createXML(volume_xml, 0)
+
+        if self.mount_source_domain is None:
+            return
+
+        usb_volume_xml = self._render_template(
+            self.overlay_template_path,
+            {
+                "name": self.usb_disk_volume_name,
+                "backing_image": str(self.image_path),
+            },
+        )
+        self._usb_disk_volume = self.pool.createXML(usb_volume_xml, 0)
 
     def _copy_nvram(self) -> None:
         """Copy the NVRAM file into the pool, leaving the original untouched."""
@@ -179,6 +193,7 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
             {
                 "name": self.domain_name,
                 "disk": str(self.pool_dir / self.disk_volume_name),
+                "usb_disk": self._usb_disk_xml(),
                 "nvram": str(self.pool_dir / self.nvram_volume_name),
             },
         )
@@ -187,10 +202,32 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
         if self._domain is None:
             raise RuntimeError(f"Unable to define domain '{self.domain_name}'")
 
+    def _usb_disk_xml(self) -> str:
+        if self.mount_source_domain is None:
+            return ""
+
+        usb_disk = self.pool_dir / self.usb_disk_volume_name
+        target_dev = self._usb_disk_target_dev()
+        return f"""    <disk type="file" device="disk">
+      <driver name="qemu" type="qcow2" discard="unmap"/>
+      <source file="{usb_disk}"/>
+      <target dev="{target_dev}" bus="usb"/>
+    </disk>"""
+
+    def _usb_disk_target_dev(self) -> str:
+        if self.mount_source_domain is None:
+            return "sda"
+
+        # Libvirt needs the whole-disk target (e.g. sda), while Robot gets the
+        # partition path to mount (e.g. /dev/sda5).
+        return Path(self.mount_source_domain).name.rstrip("0123456789")
+
     async def _run_yarf(
         self, suite: str, test: str, vsock_cid: int, vnc_port: int
     ) -> int:
         robot_variables = {"CID": str(vsock_cid)}
+        if self.mount_source_domain is not None:
+            robot_variables["DEVICE"] = self.mount_source_domain
         if self.recovery_key:
             robot_variables["RECOVERY_KEY"] = self.recovery_key
             LOGGER.info(

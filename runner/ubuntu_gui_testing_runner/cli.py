@@ -32,6 +32,14 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Keep the domain and resources after the run completes",
     )
+    parser.add_argument(
+        "--mount-source-domain",
+        nargs="?",
+        const="/dev/sda",
+        default=None,
+        metavar="DEVICE",
+        help="Attach a second overlay of the source domain as a USB disk",
+    )
 
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument(

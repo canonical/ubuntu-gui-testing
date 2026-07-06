@@ -84,3 +84,44 @@ def test_keep_flag_set_to_true(monkeypatch: pytest.MonkeyPatch) -> None:
     )
     args = parse_args()
     assert args.keep is True
+
+
+def test_mount_source_domain_defaults_to_sda(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "runner",
+            "--suite",
+            "s",
+            "--test",
+            "t",
+            "--source-domain",
+            "d",
+            "--mount-source-domain",
+        ],
+    )
+    args = parse_args()
+    assert args.mount_source_domain == "/dev/sda"
+
+
+def test_mount_source_domain_accepts_device(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "runner",
+            "--suite",
+            "s",
+            "--test",
+            "t",
+            "--source-domain",
+            "d",
+            "--mount-source-domain",
+            "/dev/sdb",
+        ],
+    )
+    args = parse_args()
+    assert args.mount_source_domain == "/dev/sdb"

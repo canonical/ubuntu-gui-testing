@@ -58,12 +58,14 @@ class _BaseLibvirtRunner(Runner):
         self._conn: libvirt.virConnect | None = None
         self._pool: libvirt.virStoragePool | None = None
         self._disk_volume: libvirt.virStorageVol | None = None
+        self._usb_disk_volume: libvirt.virStorageVol | None = None
         self._domain: libvirt.virDomain | None = None
 
         try:
             self._open_connection()
             self.domain_name = self._generate_domain_name(suite_name, test_name)
             self.disk_volume_name = f"{self.domain_name}.qcow2"
+            self.usb_disk_volume_name = f"{self.domain_name}-usb.qcow2"
             self.nvram_volume_name = f"{self.domain_name}-VARS.fd"
             self._ensure_pool()
             self._setup()
@@ -128,6 +130,15 @@ class _BaseLibvirtRunner(Runner):
                         "Failed to delete disk volume '%s'", self.disk_volume_name
                     )
 
+            if self._usb_disk_volume is not None:
+                try:
+                    self._usb_disk_volume.delete()
+                except libvirt.libvirtError:
+                    LOGGER.exception(
+                        "Failed to delete USB disk volume '%s'",
+                        self.usb_disk_volume_name,
+                    )
+
             if self._pool is not None:
                 try:
                     nvram_volume = self._pool.storageVolLookupByName(
@@ -153,6 +164,7 @@ class _BaseLibvirtRunner(Runner):
 
         self._domain = None
         self._disk_volume = None
+        self._usb_disk_volume = None
         self._pool = None
         self._conn = None
 
