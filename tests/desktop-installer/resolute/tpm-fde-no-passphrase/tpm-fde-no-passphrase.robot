@@ -78,6 +78,10 @@ Encryption And File System Tpm Encryption
     [Documentation]         Select tpm encryption from the encryption menu
     Encryption And File System Tpm Encryption
 
+TPM Action Running In VM Ignore And Continue
+    [Documentation]     Choose 'Ignore and continue' when secboot complains that the current environment is a VM.
+    TPM Action Running In VM Ignore And Continue
+
 Create Account
     [Documentation]         Create a user on the installed system
     Create Account  template=generic-resolute
