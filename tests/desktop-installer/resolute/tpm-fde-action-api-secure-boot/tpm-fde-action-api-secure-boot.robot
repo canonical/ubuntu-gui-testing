@@ -84,6 +84,10 @@ Encryption And File System Tpm Encryption
     [Documentation]    Select tpm encryption from the encryption menu
     Encryption And File System Tpm Encryption
 
+TPM Action Running In VM Ignore And Continue
+    [Documentation]     Choose 'Ignore and continue' when secboot complains that the current environment is a VM.
+    TPM Action Running In VM Ignore And Continue
+
 Encryption And File System Tpm Not Available
     [Documentation]    Ensure that the TPM FDE encryption option is greyed out, and not selectable
     Encryption And File System Tpm Not Available
@@ -165,6 +169,10 @@ Choose Where to Install Ubuntu 2
 Encryption And File System Tpm Encryption 2
     [Documentation]    Select tpm encryption from the encryption menu
     Encryption And File System Tpm Encryption
+
+TPM Action Running In VM Ignore And Continue 2
+    [Documentation]     Choose 'Ignore and continue' when secboot complains that the current environment is a VM.
+    TPM Action Running In VM Ignore And Continue
 
 Create Account
     [Documentation]    Create a user on the installed system
