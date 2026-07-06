@@ -158,16 +158,17 @@ Run Command With Prompt
 Answer Prompt
     [Documentation]    Answer to a prompt
     [Arguments]    ${prompt}    ${input}
-    Match Text    ${prompt}    20
+    Match Text    ${prompt}    60
     Type String    ${input}
     Keys Combo    Return
 
 System Reboot
     [Documentation]    Reboot the system and log in again
-    [Arguments]    ${prompt}=""    ${input}=""
+    [Arguments]    ${prompt}=${EMPTY}    ${input}=${EMPTY}
+    BuiltIn.Sleep    1
     Run Simple Command    reboot
     BuiltIn.Sleep    60
-    IF    ${prompt} != ""    Answer Prompt    ${prompt}    ${input}
+    IF    $prompt    Answer Prompt    ${prompt}    ${input}
     Log In
     Open Terminal
     Run Sudo Command In Terminal    sudo echo
