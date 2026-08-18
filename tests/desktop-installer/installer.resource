@@ -667,7 +667,5 @@ TPM Action Enable Secure Boot Manually
 TPM Action Running In VM Ignore And Continue
     [Documentation]     Choose 'Ignore and continue' when secboot complains that the current environment is a VM.
     Match Text  "The current environment is a virtual machine"
-    Move Pointer To "Solution: Ignore"
-    EzClick
     Move Pointer To "Ignore and continue"
     EzClick
