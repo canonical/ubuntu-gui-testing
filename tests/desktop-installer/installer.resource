@@ -477,7 +477,7 @@ Encryption And File System Tpm Not Available
     # Only used in resolute tests
     [Documentation]         Check for error message that says TPM/FDE could not be enabled
     Match Text  Encryption and file system  120
-    Match Text  Hardware-backed encryption could not be enabled  120
+    Match Text  There is an issue with hardware-backed encryption  120
 
 Encryption And File System Tpm Encryption
     # Only used in resolute tests
