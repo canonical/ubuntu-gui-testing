@@ -285,7 +285,7 @@ suites:
     assert template_name == "ugt-iso"
     expected = (
         "--iso /srv/data/.rf_image_cache/resolute/resolute-desktop-amd64.iso"
-        + " \\\n--keep"
+        + " \\\n--keep \\\n--delete-previous"
     )
     assert instance["args"] == expected
     assert instance["triggers"] == []
