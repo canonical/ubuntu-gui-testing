@@ -116,7 +116,7 @@ def _instance(config: Config, test: Test) -> tuple[str, dict[str, Any]]:
 
     args = source
     if config.is_producer(test):
-        args = f"{source} \\\n--keep"
+        args = f"{source} \\\n--keep \\\n--delete-previous"
 
     triggers: list[dict[str, Any]] = []
     if producer is not None:
