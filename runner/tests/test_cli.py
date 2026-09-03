@@ -125,3 +125,31 @@ def test_mount_source_domain_accepts_device(
     )
     args = parse_args()
     assert args.mount_source_domain == "/dev/sdb"
+
+
+def test_delete_previous_flag_defaults_to_false(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "sys.argv", ["runner", "--suite", "s", "--test", "t", "--iso", "a.iso"]
+    )
+    args = parse_args()
+    assert args.delete_previous is False
+
+
+def test_delete_previous_flag_set_to_true(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "sys.argv",
+        [
+            "runner",
+            "--suite",
+            "s",
+            "--test",
+            "t",
+            "--iso",
+            "a.iso",
+            "--delete-previous",
+        ],
+    )
+    args = parse_args()
+    assert args.delete_previous is True

@@ -1,11 +1,14 @@
 from __future__ import annotations
 
-from datetime import date
+import re
+from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 import libvirt  # type: ignore[import-untyped]
 
 from ubuntu_gui_testing_runner.base import _BaseLibvirtRunner
+
+_DOMAIN_NAME = re.compile(r"^ugt-desktop-installer-resolute\.entire-disk-\d{8}T\d{6}Z$")
 
 
 class _FakeRunner(_BaseLibvirtRunner):
@@ -32,10 +35,12 @@ def _make_conn_with_existing_domains(names: list[str]) -> MagicMock:
     return conn
 
 
-def test_domain_name_includes_suite_test_and_date() -> None:
+def _fixed_now() -> datetime:
+    return datetime(2026, 6, 18, 13, 4, 5, tzinfo=UTC)
+
+
+def test_domain_name_includes_suite_test_and_utc_timestamp() -> None:
     conn = _make_conn_with_existing_domains([])
-    today = date.today().isoformat()
-    expected = f"ugt-desktop-installer-resolute.entire-disk-{today}"
 
     with patch("libvirt.open", return_value=conn):
         runner = _FakeRunner(
@@ -43,18 +48,20 @@ def test_domain_name_includes_suite_test_and_date() -> None:
             test_name="resolute.entire-disk",
         )
         try:
-            assert runner.domain_name == expected
+            assert _DOMAIN_NAME.match(runner.domain_name)
         finally:
             runner.close()
 
 
 def test_domain_name_appends_suffix_on_collision() -> None:
-    today = date.today().isoformat()
-    base = f"ugt-desktop-installer-resolute.entire-disk-{today}"
-    existing = [base]
-    conn = _make_conn_with_existing_domains(existing)
+    base = "ugt-desktop-installer-resolute.entire-disk-20260618T130405Z"
+    conn = _make_conn_with_existing_domains([base])
 
-    with patch("libvirt.open", return_value=conn):
+    with (
+        patch("libvirt.open", return_value=conn),
+        patch("ubuntu_gui_testing_runner.base.datetime") as mock_datetime,
+    ):
+        mock_datetime.now.return_value = _fixed_now()
         runner = _FakeRunner(
             suite_name="desktop-installer",
             test_name="resolute.entire-disk",
@@ -66,12 +73,15 @@ def test_domain_name_appends_suffix_on_collision() -> None:
 
 
 def test_domain_name_increments_suffix_until_unique() -> None:
-    today = date.today().isoformat()
-    base = f"ugt-desktop-installer-resolute.entire-disk-{today}"
+    base = "ugt-desktop-installer-resolute.entire-disk-20260618T130405Z"
     existing = [base, f"{base}-2", f"{base}-3"]
     conn = _make_conn_with_existing_domains(existing)
 
-    with patch("libvirt.open", return_value=conn):
+    with (
+        patch("libvirt.open", return_value=conn),
+        patch("ubuntu_gui_testing_runner.base.datetime") as mock_datetime,
+    ):
+        mock_datetime.now.return_value = _fixed_now()
         runner = _FakeRunner(
             suite_name="desktop-installer",
             test_name="resolute.entire-disk",

@@ -23,7 +23,21 @@ Clone an existing libvirt domain (using a qcow2 overlay) and run the test suite 
 ubuntu-gui-testing-runner \
   --suite tests/firefox-example \
   --test firefox-example-basic \
-  --source-domain ugt-desktop-installer-resolute.entire-disk-2026-06-01
+  --source-domain ugt-desktop-installer-resolute.entire-disk-20260601T120000Z
+```
+
+### From the latest matching domain
+
+Clone the most recent domain whose name starts with a given prefix. Domains are
+named `ugt-<suite>-<test>-<UTC timestamp>` (e.g. `...-20260601T120000Z`); the
+fixed-width timestamp is lexicographically sortable, so the newest matching
+domain is selected automatically:
+
+```bash
+ubuntu-gui-testing-runner \
+  --suite tests/firefox-example \
+  --test firefox-example-basic \
+  --source-domain-prefix ugt-desktop-installer-resolute.entire-disk
 ```
 
 ### From an existing domain with source disk mounted as USB
@@ -52,7 +66,9 @@ If `--mount-source-domain` is passed without a value, the default device is
 | `--iso` | Path to an ISO for installation |
 | `--source-domain` | Existing libvirt domain to clone from |
 | `--mount-source-domain [DEVICE]` | Attach a second overlay of the source domain as a USB disk and pass `DEVICE` to Robot variables |
+| `--source-domain-prefix` | Clone the most recent domain whose name starts with this prefix |
 | `--keep` | Keep the VM and resources after the run |
+| `--delete-previous` | Delete domains and VM state from previous kept runs of the same suite/test before starting; ISOs are never deleted |
 | `--connection-uri` | Libvirt connection URI (default: `qemu:///session`) |
 | `--pool-name` | Storage pool name (default: `ubuntu-gui-testing`) |
 | `--pool-dir` | Storage pool directory (default: `/pool`) |
@@ -65,7 +81,8 @@ If `--mount-source-domain` is passed without a value, the default device is
 | `--volume-template` | Override volume XML template |
 | `--overlay-template` | Override overlay volume XML template |
 
-Either `--iso` or `--source-domain` must be provided.
+Exactly one of `--iso`, `--source-domain`, or `--source-domain-prefix` must be
+provided.
 
 ## Development
 

@@ -5,6 +5,7 @@ from pathlib import Path
 from ubuntu_gui_testing_runner.cli import parse_args
 from ubuntu_gui_testing_runner.image_runner import LibvirtImageRunner
 from ubuntu_gui_testing_runner.iso_runner import LibvirtIsoRunner
+from ubuntu_gui_testing_runner.previous import delete_previous_runs
 from ubuntu_gui_testing_runner.runner import Runner
 
 
@@ -13,11 +14,24 @@ def main() -> None:
 
     args = parse_args()
 
+    # Use suite_name once and pass it to both cleanup and runner constructors
+    suite_name = Path(args.suite).name
+
+    if args.delete_previous:
+        delete_previous_runs(
+            suite_name=suite_name,
+            test_name=args.test,
+            connection_uri=args.connection_uri,
+            pool_name=args.pool_name,
+            swtpm_state_dir=args.swtpm_state_dir,
+            pool_dir=args.pool_dir,
+        )
+
     runner_ctx: Runner
     if args.iso:
         runner_ctx = LibvirtIsoRunner(
             iso=args.iso,
-            suite_name=Path(args.suite).name,
+            suite_name=suite_name,
             test_name=args.test,
             keep=args.keep,
             domain_template=args.domain_template,
@@ -33,7 +47,8 @@ def main() -> None:
     else:
         runner_ctx = LibvirtImageRunner(
             source_domain=args.source_domain,
-            suite_name=Path(args.suite).name,
+            source_domain_prefix=args.source_domain_prefix,
+            suite_name=suite_name,
             test_name=args.test,
             keep=args.keep,
             domain_template=args.domain_template,
