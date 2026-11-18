@@ -41,6 +41,15 @@ def parse_args() -> argparse.Namespace:
         help="Attach a second overlay of the source domain as a USB disk",
     )
 
+    parser.add_argument(
+        "--delete-previous",
+        action="store_true",
+        help=(
+            "Delete domains and VM state from previous kept runs of the same "
+            "suite/test before starting"
+        ),
+    )
+
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument(
         "--iso",

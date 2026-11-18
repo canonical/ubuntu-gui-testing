@@ -68,6 +68,7 @@ If `--mount-source-domain` is passed without a value, the default device is
 | `--mount-source-domain [DEVICE]` | Attach a second overlay of the source domain as a USB disk and pass `DEVICE` to Robot variables |
 | `--source-domain-prefix` | Clone the most recent domain whose name starts with this prefix |
 | `--keep` | Keep the VM and resources after the run |
+| `--delete-previous` | Delete domains and VM state from previous kept runs of the same suite/test before starting; ISOs are never deleted |
 | `--connection-uri` | Libvirt connection URI (default: `qemu:///session`) |
 | `--pool-name` | Storage pool name (default: `ubuntu-gui-testing`) |
 | `--pool-dir` | Storage pool directory (default: `/pool`) |
