@@ -33,6 +33,7 @@ def main() -> None:
     else:
         runner_ctx = LibvirtImageRunner(
             source_domain=args.source_domain,
+            source_domain_prefix=args.source_domain_prefix,
             suite_name=Path(args.suite).name,
             test_name=args.test,
             keep=args.keep,
