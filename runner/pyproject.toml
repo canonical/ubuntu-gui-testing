@@ -13,6 +13,7 @@ dependencies = [
 
 [project.scripts]
 ubuntu-gui-testing-runner = "ubuntu_gui_testing_runner.__main__:main"
+ubuntu-gui-testing-fde = "ubuntu_gui_testing_runner.fde_suite:main"
 
 [dependency-groups]
 dev = [
