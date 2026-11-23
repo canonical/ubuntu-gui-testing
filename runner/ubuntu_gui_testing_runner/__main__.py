@@ -29,6 +29,7 @@ def main() -> None:
             connection_uri=args.connection_uri,
             pool_name=args.pool_name,
             pool_dir=args.pool_dir,
+            robot_test=args.robot_test,
         )
     else:
         runner_ctx = LibvirtImageRunner(
@@ -39,11 +40,15 @@ def main() -> None:
             domain_template=args.domain_template,
             overlay_template=args.overlay_template,
             mount_source_domain=args.mount_source_domain,
+            fde_config=args.fde_config,
+            robot_test=args.robot_test,
+            capture=args.capture,
             pool_template=args.pool_template,
             artifacts_dir=args.artifacts_dir,
             connection_uri=args.connection_uri,
             pool_name=args.pool_name,
             pool_dir=args.pool_dir,
+            swtpm_state_dir=args.swtpm_state_dir,
         )
 
     with runner_ctx as runner:

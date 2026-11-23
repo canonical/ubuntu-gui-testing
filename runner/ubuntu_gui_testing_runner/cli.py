@@ -51,6 +51,25 @@ def parse_args() -> argparse.Namespace:
         help="Name of an existing libvirt domain to clone from",
     )
 
+    fde = parser.add_argument_group("TPM-FDE testing")
+    fde.add_argument(
+        "--fde-config",
+        type=Path,
+        default=None,
+        help="Private TPM-FDE fixture configuration for one mutated clone",
+    )
+    fde.add_argument(
+        "--robot-test",
+        default=None,
+        help="Run only this Robot case from the selected suite",
+    )
+    fde.add_argument(
+        "--no-capture",
+        dest="capture",
+        action="store_false",
+        help="Do not record the clone display during an FDE case",
+    )
+
     libvirt = parser.add_argument_group("libvirt connection")
     libvirt.add_argument(
         "--connection-uri",

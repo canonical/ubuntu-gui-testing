@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 import logging
 import os
+import re
+import shutil
+import sys
 import time
 from abc import abstractmethod
 from datetime import date
 from pathlib import Path
+from tempfile import mkdtemp
 
 import defusedxml.ElementTree as ET
 import libvirt  # type: ignore[import-untyped]
@@ -24,9 +29,56 @@ from ubuntu_gui_testing_runner.runner import Runner
 
 LOGGER = logging.getLogger(__name__)
 
+# Yarf inlines its suite video as a data URI, which makes output.xml large and
+# the recording awkward to share outside log.html.
+_LOG_VIDEO = re.compile(r"data:video/webm;base64,([A-Za-z0-9+/=]+)")
+
+
+def _yarf_executable() -> str:
+    """Locate yarf, including the interpreter's own environment.
+
+    The aggregate runner starts this module with the same virtual environment's
+    Python, whose bin directory is not necessarily on PATH.
+    """
+    found = shutil.which("yarf")
+    if found is not None:
+        return found
+    for candidate in (
+        Path(sys.executable).parent / "yarf",
+        Path(sys.prefix) / "bin" / "yarf",
+    ):
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return str(candidate)
+    raise RuntimeError(
+        "cannot find the 'yarf' executable; run from an environment that has it"
+    )
+
+
+def _yarf_limit_prefix() -> list[str]:
+    """Bound Yarf's OCR so the guest keeps CPU while it boots.
+
+    Yarf's text matcher can saturate every core on a blank firmware screen.
+    Under that contention the clone can remain in OVMF for minutes while the
+    text matcher waits for a prompt it is itself starving. Giving the guest
+    priority is the difference between a recorded boot and a stalled one.
+    """
+    prefix: list[str] = []
+    cpus = os.cpu_count() or 2
+    taskset = shutil.which("taskset")
+    if taskset is not None and cpus > 2:
+        # Leave most cores to the guest and to the host services it needs.
+        keep = max(2, cpus // 4)
+        prefix.extend([taskset, "-c", f"0-{keep - 1}"])
+    nice = shutil.which("nice")
+    if nice is not None:
+        prefix.extend([nice, "-n", "19"])
+    return prefix
+
 
 class _BaseLibvirtRunner(Runner):
     """Common infrastructure for libvirt-based runners."""
+
+    robot_test: str | None = None
 
     def __init__(
         self,
@@ -38,11 +90,13 @@ class _BaseLibvirtRunner(Runner):
         connection_uri: str = DEFAULT_CONNECTION_URI,
         pool_name: str = DEFAULT_POOL_NAME,
         pool_dir: Path = DEFAULT_POOL_DIR,
+        robot_test: str | None = None,
     ) -> None:
         self.connection_uri = connection_uri
         self.pool_name = pool_name
         self.pool_dir = pool_dir.resolve()
         self.keep = keep
+        self.robot_test = robot_test
 
         self.pool_template_path = (
             pool_template.resolve()
@@ -309,21 +363,67 @@ class _BaseLibvirtRunner(Runner):
         vnc_port: int,
         robot_variables: dict[str, str],
     ) -> asyncio.subprocess.Process:
+        is_fde = "FDE_CONFIG" in robot_variables
+        if is_fde:
+            self.artifacts_path.mkdir(parents=True, exist_ok=True)
+            self.artifacts_path = Path(mkdtemp(prefix="fde-", dir=self.artifacts_path))
         command = [
-            "yarf",
+            *_yarf_limit_prefix(),
+            _yarf_executable(),
             "--platform=Vnc",
             suite,
             "--outdir",
             str(self.artifacts_path),
-            "--",
         ]
+        if is_fde:
+            command.append("--log-video")
+        command.append("--")
         for name, value in robot_variables.items():
             command.extend(["--variable", f"{name}:{value}"])
         command.extend(["--suite", test])
+        if self.robot_test:
+            command.extend(["--test", self.robot_test])
         env = os.environ.copy()
         env["VNC_PORT"] = str(vnc_port - 5900)
+        # OCR matrix libraries otherwise size their pools to every host core.
+        for name in (
+            "OMP_NUM_THREADS",
+            "OPENBLAS_NUM_THREADS",
+            "MKL_NUM_THREADS",
+            "NUMEXPR_NUM_THREADS",
+        ):
+            env.setdefault(name, "4")
+        # Robot libraries such as the FDE fixture import this package directly.
+        runner_root = str(Path(__file__).resolve().parent.parent)
+        env["PYTHONPATH"] = os.pathsep.join(
+            [runner_root, env["PYTHONPATH"]] if env.get("PYTHONPATH") else [runner_root]
+        )
+        if is_fde:
+            return await asyncio.create_subprocess_exec(*command, env=env, umask=0o077)
         process = await asyncio.create_subprocess_exec(*command, env=env)
         return process
+
+    def _save_log_video(self) -> Path | None:
+        """Write Yarf's embedded log video to a standalone file.
+
+        Returns the written path, or None when the run produced no video.
+        """
+        try:
+            output_xml = (self.artifacts_path / "output.xml").read_text(
+                encoding="utf-8", errors="replace"
+            )
+        except OSError:
+            return None
+        match = _LOG_VIDEO.search(output_xml)
+        if match is None:
+            return None
+        video = self.artifacts_path / "video.webm"
+        # The recording can show a recovery key on screen, so it stays owner-only
+        # even when the artifacts directory was supplied by the caller.
+        video.touch(mode=0o600)
+        video.write_bytes(base64.b64decode(match.group(1)))
+        video.chmod(0o600)
+        return video
 
     @staticmethod
     def _render_template(path: Path, replacements: dict[str, str]) -> str:
