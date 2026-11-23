@@ -1,0 +1,418 @@
+---
+# Snapshot of the inventory in tpm-fde-cases.json, which is the source of
+# truth. executed = observed in a passing run; blocked and
+# source-inapplicable carry the reason.
+schema: 1
+pins:
+  snapd: 2.78+g260.e4a83bb
+  snapd-commit: e4a83bb0ff677bc45f3bd42068e3660bb9112a57
+  security-center: x1
+  baseline: ugt-fde-golden-2604-edge-20261118
+  secboot: 4924adcf6262
+kind:
+  internal-error:
+    verdict: source-inapplicable
+    reason: needs an unclassified secboot failure;
+      no legitimate trigger
+  shutdown-required:
+    verdict: blocked
+    reason: emitted only after an S5 PPI action;
+      OVMF answers reboot; needs a physical
+      machine (HARDWARE.md)
+  reboot-required:
+    verdict: executed
+    case: runtime.tpm-disabled.enable-and-clear.recovery-unlock.success
+    evidence:
+      - after the firmware TPM request is queued
+        snapd reports reboot-required and the
+        dialog shows "Restart is required."
+        with the Restart solution (the lockout
+        case does the same)
+  unexpected-action:
+    verdict: source-inapplicable
+    reason: the application applies only an
+      action snapd offered; no GUI path sends
+      an unexpected one
+  missing-argument:
+    verdict: source-inapplicable
+    reason: declared in secboot but constructed
+      only in tests
+  invalid-argument:
+    verdict: source-inapplicable
+    reason: the application sends only the kind
+      snapd offered
+  action-failed:
+    verdict: blocked
+    reason: produced only by a failing PPI or
+      clear-TPM action; the requests OVMF offers
+      (clear, enable and clear) succeeded in
+      the TPM-state cases
+  running-in-vm:
+    verdict: executed
+    case: runtime.tpm-cleared.reprovision.recovery-unlock.success
+    evidence:
+      - the check reports running-in-vm and
+        offers proceed
+  system-not-efi:
+    verdict: source-inapplicable
+    reason: the target disk is GPT with an ESP
+      and has no legacy boot path
+  efi-variable-access:
+    verdict: blocked
+    reason: needs an efivarfs read fault; not
+      reproducible on this target
+  no-suitable-tpm2-device:
+    verdict: executed
+    case: runtime.tpm-missing.unavailable.no-action
+    evidence:
+      - Assert Actual Repair Preconditions accepts
+        no-suitable-tpm2-device
+  tpm-device-failure:
+    verdict: blocked
+    reason: needs a real TPM self-test failure;
+      swtpm does not report one and canned replies
+      are excluded
+  tpm-device-disabled:
+    verdict: executed
+    case: runtime.tpm-disabled.enable-and-clear.recovery-unlock.success
+    evidence:
+      - a real tpm2_hierarchycontrol disables
+        the endorsement hierarchy; snapd reports
+        tpm-device-disabled with enable-and-clear-tpm-via-firmware
+        and reboot-to-fw-settings after the
+        user answers the VM warning, and the
+        dialog shows "TPM is disabled"
+  tpm-hierarchies-owned:
+    verdict: source-inapplicable
+    reason: 'install-time check: secboot skips
+      the hierarchy ownership and NV counter
+      checks when PostInstallChecks is set (efi/preinstall/checks.go:210,
+      check_tpm.go:398-448, 4924adcf6262) and
+      snapd''s running-system check calls secboot.PostinstallCheck
+      (overlord/devicestate/devicemgr.go), so
+      an installed system never reports it'
+  tpm-device-lockout-locked-out:
+    verdict: executed
+    case: runtime.tpm-lockout.clear-via-firmware.recovery-unlock.success
+    evidence:
+      - real tpm2_dictionarylockout and one
+        wrong lockout authorization lock the
+        TPM; snapd reports tpm-device-lockout-locked-out
+        with clear-tpm-via-firmware, enable-and-clear-tpm-via-firmware
+        and reboot-to-fw-settings, and the dialog
+        shows "TPM is currently locked"
+  insufficient-tpm-storage:
+    verdict: source-inapplicable
+    reason: 'install-time check: secboot skips
+      the hierarchy ownership and NV counter
+      checks when PostInstallChecks is set (efi/preinstall/checks.go:210,
+      check_tpm.go:398-448, 4924adcf6262) and
+      snapd''s running-system check calls secboot.PostinstallCheck
+      (overlord/devicestate/devicemgr.go), so
+      an installed system never reports it'
+  no-suitable-pcr-bank:
+    verdict: executed
+    case: runtime.pcr-bank.reboot-to-fw-settings.recovery-unlock.success
+    evidence:
+      - a real tpm2_pcrextend on PCR 4 makes
+        the event log stop replaying to the
+        PCR; snapd reports no-suitable-pcr-bank
+        with reboot-to-fw-settings and contact-oem,
+        and the dialog offers "Enable PCR banks
+        manually"
+  measured-boot:
+    verdict: blocked
+    reason: the firmware measurement log is
+      always present; no state suppresses it
+  tpm-command-failed:
+    verdict: blocked
+    reason: needs a genuine TPM command failure;
+      canned replies are excluded
+  invalid-tpm-response:
+    verdict: blocked
+    reason: needs a fabricated TPM response;
+      excluded
+  tpm-communication:
+    verdict: blocked
+    reason: runtime-only communication fault;
+      not reproducible on this VM
+  unsupported-platform:
+    verdict: source-inapplicable
+    reason: unreachable in this source's classification
+  insufficient-dma-protection:
+    verdict: blocked
+    reason: host-security checks are skipped
+      under virtualization
+  no-kernel-iommu:
+    verdict: blocked
+    reason: host-security checks are skipped
+      under virtualization; needs a physical
+      machine (HARDWARE.md row 6)
+  host-security:
+    verdict: blocked
+    reason: host-security checks are skipped
+      under virtualization
+  tpm-pcr-unusable:
+    verdict: executed
+    case: runtime.pcr-unusable.firmware-continue.recovery-unlock.success
+    evidence:
+      - leaving OVMF's firmware setup with Continue
+        boots the system in the same firmware
+        session; snapd then reports tpm-pcr-unusable
+        with only contact-oem, and the dialog
+        says the hardware could not be repaired
+  addon-drivers-present:
+    verdict: source-inapplicable
+    reason: this firmware and OS configuration
+      always permits addon drivers
+  sys-prep-applications-present:
+    verdict: executed
+    case: runtime.sysprep-app.proceed.recovery-unlock.success
+    evidence:
+      - Confirm Snapd Reports Issue accepts
+        sys-prep-applications-present
+  absolute-present:
+    verdict: blocked
+    reason: no legitimate recipe for an Absolute
+      module on this hardware
+  invalid-secure-boot-mode:
+    verdict: blocked
+    reason: 'a Secure Boot mode, not a TPM state:
+      the application has a panel for it, but
+      the fixture catalog has no fixture that
+      leaves the VM firmware out of deployed
+      mode; HARDWARE.md row 4 records what real
+      firmware shows'
+  weak-secure-boot-algorithms-detected:
+    verdict: executed
+    case: runtime.weak-sb.proceed.recovery-unlock.success
+    evidence:
+      - Confirm Snapd Reports Issue accepts
+        weak-secure-boot-algorithms-detected
+  pre-os-secure-boot-auth-by-enrolled-digests:
+    verdict: executed
+    case: runtime.preos-digest.proceed.recovery-unlock.success
+    evidence:
+      - Confirm Snapd Reports Issue accepts
+        pre-os-secure-boot-auth-by-enrolled-digests
+  no-hardware-root-of-trust:
+    verdict: blocked
+    reason: QEMU exposes no Boot Guard or PSB
+      root of trust
+action:
+  reboot:
+    verdict: executed
+    case: runtime.tpm-disabled.enable-and-clear.recovery-unlock.success
+    evidence:
+      - the Restart solution's Continue button
+        opens the confirm page and "Restart
+        now" restarts the clone through logind;
+        the boot id changes
+  shutdown:
+    verdict: blocked
+    reason: emitted only from an S5 PPI action;
+      OVMF answers reboot; needs a physical
+      machine (HARDWARE.md)
+  reboot-to-fw-settings:
+    verdict: executed
+    case: runtime.pcr-bank.reboot-to-fw-settings.recovery-unlock.success
+    evidence:
+      - the dialog's Continue button leads to
+        the confirm page with the settings-key
+        instructions; "Restart now" restarts,
+        the suite presses F2 repeatedly at startup
+        as the page says (OVMF opens its boot
+        menu), opens "EFI Firmware Setup" and
+        resets the machine from its menu, and
+        the repair then completes
+  contact-oem:
+    verdict: executed
+    case: runtime.pcr-bank.reboot-to-fw-settings.recovery-unlock.success
+    evidence:
+      - snapd's answer lists contact-oem next
+        to reboot-to-fw-settings (expected_actions);
+        the application never shows contact
+        actions, so the dialog reads "Try the
+        solution below or contact IT support."
+        and offers the one firmware solution
+  contact-os-vendor:
+    verdict: blocked
+    reason: emitted for no-kernel-iommu, a host-security
+      check that is skipped under virtualization;
+      needs a physical machine (HARDWARE.md)
+  enable-tpm-via-firmware:
+    verdict: blocked
+    reason: offered only when the firmware reports
+      PPI operation 2; OVMF reports 5 and 14
+      only; needs a physical machine (HARDWARE.md)
+  enable-and-clear-tpm-via-firmware:
+    verdict: executed
+    case: runtime.tpm-disabled.enable-and-clear.recovery-unlock.success
+    evidence:
+      - the dialog's "Enable and clear TPM on
+        restart" button, after the risk checkbox,
+        queues the request; the firmware's prompt
+        is approved with F12, the TPM is cleared,
+        and the repair then completes with an
+        unattended unlock on the next boot
+  clear-tpm-via-firmware:
+    verdict: executed
+    case: runtime.tpm-lockout.clear-via-firmware.recovery-unlock.success
+    evidence:
+      - the dialog's "Clear TPM on restart"
+        button, after the risk checkbox, queues
+        the request; the firmware's prompt is
+        approved with F12, the TPM is cleared,
+        the lockout ends, and the repair then
+        completes with an unattended unlock
+        on the next boot
+  clear-tpm-simple:
+    verdict: source-inapplicable
+    reason: 'install-time check: secboot skips
+      the hierarchy ownership and NV counter
+      checks when PostInstallChecks is set (efi/preinstall/checks.go:210,
+      check_tpm.go:398-448, 4924adcf6262) and
+      snapd''s running-system check calls secboot.PostinstallCheck
+      (overlord/devicestate/devicemgr.go), so
+      an installed system never reports it'
+  clear-tpm:
+    verdict: source-inapplicable
+    reason: 'install-time check: secboot skips
+      the hierarchy ownership and NV counter
+      checks when PostInstallChecks is set (efi/preinstall/checks.go:210,
+      check_tpm.go:398-448, 4924adcf6262) and
+      snapd''s running-system check calls secboot.PostinstallCheck
+      (overlord/devicestate/devicemgr.go), so
+      an installed system never reports it'
+  proceed:
+    verdict: executed
+    case: runtime.preos-digest.proceed.recovery-unlock.success
+    evidence:
+      - the product applies snapd's proceed
+        action for the reported pre-OS issue
+status:
+  indeterminate:
+    verdict: blocked
+    reason: transient pre-response client state;
+      no deterministic capture recipe yet
+  active:
+    verdict: executed
+    case: runtime.tpm-cleared.reprovision.recovery-unlock.success
+    evidence:
+      - Assert Repair Is Not Needed reports
+        status active after the repaired boot
+  inactive:
+    verdict: blocked
+    reason: needs an unencrypted or inactive
+      disk baseline; this certified fixture
+      is encrypted and active
+  recovery:
+    verdict: executed
+    case: runtime.tpm-cleared.reprovision.recovery-unlock.success
+    evidence:
+      - the certified baseline boots to snapd's
+        recovery prompt
+  degraded:
+    verdict: blocked
+    reason: needs a platform-activated baseline
+      plus a qualifying error; not constructible
+      on this fixture
+auto-repair-result:
+  not-initialized:
+    verdict: blocked
+    reason: not distinguished from not-attempted
+      by the installed snapd on this baseline
+  not-attempted:
+    verdict: executed
+    case: runtime.tpm-cleared.reprovision.recovery-unlock.success
+    evidence:
+      - Assert Actual Repair Preconditions accepts
+        not-attempted
+  failed-platform-init:
+    verdict: blocked
+    reason: no legitimate recipe; fabricating
+      the daemon view is excluded
+  failed-keyslots:
+    verdict: blocked
+    reason: no legitimate recipe without corrupting
+      keyslots and risking recovery
+  failed-encryption-support:
+    verdict: executed
+    case: runtime.pin-enrolled.reprovision.removal.success
+    evidence:
+      - Assert Actual Repair Preconditions accepts
+        failed-encryption-support
+  success:
+    verdict: blocked
+    reason: the product view after completion
+      does not expose this result
+recommendation:
+  permit-manual:
+    verdict: blocked
+    reason: needs a state with manual-only repair
+      guidance
+  require-reprovision:
+    verdict: executed
+    case: runtime.tpm-cleared.reprovision.recovery-unlock.success
+    evidence:
+      - the check recommends require-reprovision
+        before repair
+  require-platform-reset:
+    verdict: blocked
+    reason: needs a platform-reset recommendation;
+      not constructible in a VM
+support:
+  disabled:
+    verdict: blocked
+    reason: needs an unencrypted baseline
+  available:
+    verdict: blocked
+    reason: observed only inside the live repair
+      dialog after proceed; re-checking there
+      would replace snapd's cached check context
+  unavailable:
+    verdict: executed
+    case: runtime.tpm-missing.unavailable.no-action
+    evidence:
+      - Assert Actual Repair Preconditions observes
+        support unavailable without a TPM
+  defective:
+    verdict: blocked
+    reason: needs a defective TPM; not constructible
+feature:
+  passphrase-auth:
+    verdict: executed
+    case: runtime.tpm-cleared.reprovision.recovery-unlock.success
+    evidence:
+      - Assert Actual Repair Preconditions observes
+        passphrase-auth
+  pin-auth:
+    verdict: executed
+    case: runtime.tpm-cleared.reprovision.recovery-unlock.success
+    evidence:
+      - Assert Actual Repair Preconditions observes
+        pin-auth
+requirement:
+  volumes-auth:
+    verdict: blocked
+    reason: needs a state where the repair requires
+      a new PIN or passphrase; not yet constructed
+auth-mode:
+  none:
+    verdict: executed
+    case: runtime.tpm-cleared.reprovision.recovery-unlock.success
+    evidence:
+      - Preflight Fde Fixture reports auth mode
+        none
+  passphrase:
+    verdict: executed
+    case: runtime.passphrase-enrolled.reprovision.removal.success
+    evidence:
+      - Preflight Fde Fixture reports auth mode
+        passphrase
+  pin:
+    verdict: executed
+    case: runtime.pin-enrolled.reprovision.removal.success
+    evidence:
+      - Preflight Fde Fixture reports auth mode
+        pin
