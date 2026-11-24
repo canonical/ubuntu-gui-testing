@@ -7,6 +7,7 @@ import time
 from abc import abstractmethod
 from datetime import date
 from pathlib import Path
+from xml.sax.saxutils import escape
 
 import defusedxml.ElementTree as ET
 import libvirt  # type: ignore[import-untyped]
@@ -17,8 +18,11 @@ from ubuntu_gui_testing_runner.constants import (
     DEFAULT_POOL_DIR,
     DEFAULT_POOL_NAME,
     DEFAULT_POOL_TEMPLATE,
+    DOMAIN_METADATA_NAMESPACE,
+    DOMAIN_METADATA_ROOT,
     GRACEFUL_SHUTDOWN_POLL_INTERVAL,
     GRACEFUL_SHUTDOWN_TIMEOUT,
+    RECOVERY_KEY_METADATA_KEY,
 )
 from ubuntu_gui_testing_runner.runner import Runner
 
@@ -167,6 +171,29 @@ class _BaseLibvirtRunner(Runner):
         self._usb_disk_volume = None
         self._pool = None
         self._conn = None
+
+    def _set_recovery_key_metadata(self, recovery_key: str) -> None:
+        """Persist the recovery key in the domain's libvirt metadata."""
+        metadata_xml = (
+            f"<{DOMAIN_METADATA_ROOT}>"
+            f"<{RECOVERY_KEY_METADATA_KEY}>{escape(recovery_key)}</{RECOVERY_KEY_METADATA_KEY}>"
+            f"</{DOMAIN_METADATA_ROOT}>"
+        )
+        try:
+            self.domain.setMetadata(
+                libvirt.VIR_DOMAIN_METADATA_ELEMENT,
+                metadata_xml,
+                DOMAIN_METADATA_ROOT,
+                DOMAIN_METADATA_NAMESPACE,
+                libvirt.VIR_DOMAIN_AFFECT_CONFIG,
+            )
+        except libvirt.libvirtError:
+            LOGGER.exception(
+                "Failed to store recovery key as metadata for domain '%s'",
+                self.domain_name,
+            )
+            return
+        LOGGER.info("Stored recovery key as metadata for domain '%s'", self.domain_name)
 
     def _shutdown_domain(
         self,
