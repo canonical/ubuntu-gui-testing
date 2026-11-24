@@ -1,13 +1,18 @@
-"""Derive TPM-FDE goldens whose firmware runs extra pre-OS code.
+"""Derive TPM-FDE goldens in the states the end-to-end cases start from.
 
-Each derived golden is a kept clone of a source golden with one extra EFI
-binary on ubuntu-seed, the matching db entry and a Driver#### or SysPrep####
-load option. Pass it as --source-domain to run a pre-OS case.
+Each derived golden is a kept clone of a source golden, renamed. Pass it as
+--source-domain to run a case from that state. There are three kinds:
 
-The binary is copied by a short suite in the booted clone, because the runner
-already boots clones and talks to them over SSH. The firmware variables are
-written afterwards on the stopped clone's NVRAM with virt-fw-vars
-(python3-virt-firmware).
+- Pre-OS states (preos-*, sysprep-*) put one extra EFI binary on
+  ubuntu-seed, with the matching db entry and a Driver#### or SysPrep####
+  load option. A short suite copies the binary in the booted clone, because
+  the runner already boots clones and talks to them over SSH. The firmware
+  variables are then written on the stopped clone's NVRAM with virt-fw-vars
+  (python3-virt-firmware).
+- Host states (clear-tpm-state, no-tpm, plain-ovmf) edit the clone's TPM
+  state, domain XML or NVRAM on the host, without booting it.
+- Enroll states (enroll-pin, enroll-passphrase) enroll a PIN or passphrase
+  through snapd in the booted clone. The secret is read from --secret-file.
 """
 
 from __future__ import annotations
@@ -16,6 +21,7 @@ import argparse
 import json
 import logging
 import os
+import shutil
 import struct
 import subprocess
 import sys
@@ -24,7 +30,9 @@ import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Final
+from xml.etree.ElementTree import tostring as xml_tostring
 
+import defusedxml.ElementTree as ET
 import libvirt  # type: ignore[import-untyped]
 
 from ubuntu_gui_testing_runner.constants import (
@@ -39,6 +47,9 @@ LOGGER = logging.getLogger(__name__)
 SUITE: Final = Path(__file__).resolve().parents[2] / "tests/desktop-security-center"
 TEST: Final = "Fde-Golden-Install-Efi"
 PARTITION_FILE: Final = "seed-partition.txt"
+ENROLL_TEST: Final = "Fde-Golden-Enroll-Auth"
+# Enroll states and the snapd authentication mode each one enrolls.
+AUTH_STATES: Final = {"enroll-pin": "pin", "enroll-passphrase": "passphrase"}
 
 EFI_GLOBAL_VARIABLE_GUID: Final = "8be4df61-93ca-11d2-aa0d-00e098032b8c"
 UGT_DB_OWNER_GUID: Final = "c0fe7e57-0000-4000-8000-0000000000d6"
@@ -86,6 +97,81 @@ STATES: Final = {
         "SysPrep",
         "UGT SysPrep Application",
     ),
+    "sysprep-weak-sb": FirmwareState(
+        EFI_APPLICATION,
+        1024,
+        "UGT Weak RSA-1024 CA",
+        "/EFI/sysprep/weak.efi",
+        "SysPrep",
+        "UGT Weak Signed SysPrep",
+    ),
+    "sysprep-digest-sb": FirmwareState(
+        EFI_APPLICATION,
+        None,
+        "",
+        "/EFI/sysprep/digest.efi",
+        "SysPrep",
+        "UGT Digest Authorized SysPrep",
+    ),
+}
+
+
+PLAIN_OVMF_CODE: Final = "/usr/share/OVMF/OVMF_CODE_4M.fd"
+PLAIN_OVMF_VARS: Final = "/usr/share/OVMF/OVMF_VARS_4M.fd"
+
+
+def without_tpm(domain_xml: str) -> str:
+    """Return the domain XML with its TPM device removed."""
+    xml = ET.fromstring(domain_xml)
+    devices = xml.find("devices")
+    tpm = xml.find("devices/tpm")
+    if devices is None or tpm is None:
+        raise ValueError("Domain has no TPM to remove")
+    devices.remove(tpm)
+    return xml_tostring(xml, encoding="unicode")
+
+
+def with_plain_ovmf(domain_xml: str) -> str:
+    """Return the domain XML booting OVMF without Secure Boot."""
+    xml = ET.fromstring(domain_xml)
+    loader = xml.find("os/loader")
+    if loader is None:
+        raise ValueError("Domain has no firmware loader to replace")
+    loader.text = PLAIN_OVMF_CODE
+    loader.set("secure", "no")
+    # libvirt checks the loader against these firmware features.
+    for feature in xml.findall("os/firmware/feature"):
+        feature.set("enabled", "no")
+    nvram = xml.find("os/nvram")
+    if nvram is not None and "template" in nvram.attrib:
+        nvram.set("template", PLAIN_OVMF_VARS)
+    return xml_tostring(xml, encoding="unicode")
+
+
+def _remove_tpm_state(runner: LibvirtImageRunner, domain: Any) -> None:
+    shutil.rmtree(runner.swtpm_state_dir / domain.UUIDString(), ignore_errors=True)
+
+
+def _clear_tpm_state(runner: LibvirtImageRunner, domain: Any) -> None:
+    # Without saved state, swtpm starts the clone with a fresh, unowned TPM.
+    _remove_tpm_state(runner, domain)
+
+
+def _no_tpm(runner: LibvirtImageRunner, domain: Any) -> None:
+    domain.connect().defineXML(without_tpm(domain.XMLDesc(0)))
+    _remove_tpm_state(runner, domain)
+
+
+def _plain_ovmf(runner: LibvirtImageRunner, domain: Any) -> None:
+    shutil.copyfile(PLAIN_OVMF_VARS, runner.pool_dir / runner.nvram_volume_name)
+    domain.connect().defineXML(with_plain_ovmf(domain.XMLDesc(0)))
+
+
+# States made by editing the stopped clone on the host, without booting it.
+HOST_STATES: Final = {
+    "clear-tpm-state": _clear_tpm_state,
+    "no-tpm": _no_tpm,
+    "plain-ovmf": _plain_ovmf,
 }
 
 
@@ -267,9 +353,13 @@ def derive(
     connection_uri: str = DEFAULT_CONNECTION_URI,
     pool_name: str = DEFAULT_POOL_NAME,
     pool_dir: Path = DEFAULT_POOL_DIR,
+    secret_file: Path | None = None,
 ) -> None:
-    """Create the derived golden `name` from `source_domain` in `state_name`."""
-    state = STATES[state_name]
+    """Create the derived golden `name` from `source_domain` in `state_name`.
+
+    The enroll states read their PIN or passphrase from `secret_file`.
+    """
+    clones = _Clones(source_domain, name, connection_uri, pool_name, pool_dir)
     conn = libvirt.open(connection_uri)
     try:
         try:
@@ -281,59 +371,127 @@ def derive(
                 f"Domain '{name}' already exists; remove it or pick another name"
             )
 
-        with tempfile.TemporaryDirectory() as tmp:
-            workdir = Path(tmp)
-            efi, db_args = build_efi(state, workdir)
-            os.environ["UGT_EFI_FILE"] = str(efi)
-            os.environ["UGT_SEED_PATH"] = state.seed_path
-            with LibvirtImageRunner(
-                source_domain=source_domain,
-                # Names the clone and its volumes, which keep this name after
-                # the rename, so each derived golden gets its own.
-                suite_name=name,
-                test_name=TEST,
-                keep=True,
-                artifacts_dir=workdir / "artifacts",
-                connection_uri=connection_uri,
-                pool_name=pool_name,
-                pool_dir=pool_dir,
-            ) as runner:
-                if runner.run(suite=str(SUITE), test=TEST) != 0:
-                    raise RuntimeError(
-                        "Copying the EFI binary failed; "
-                        f"clone '{runner.domain_name}' was kept"
-                    )
-                clone = runner.domain_name
-                nvram = runner.pool_dir / runner.nvram_volume_name
-                partition_file = runner.artifacts_path / PARTITION_FILE
-            # The runner has shut the kept clone down, so its NVRAM is safe to edit.
-            part = SeedPartition.parse(partition_file.read_text(encoding="utf-8"))
-            variables = workdir / "variables.json"
-            variables.write_text(
-                json.dumps(load_option_variables(state, part)), encoding="utf-8"
-            )
-            _run(
-                [
-                    "virt-fw-vars",
-                    "--inplace",
-                    str(nvram),
-                    *db_args,
-                    "--set-json",
-                    str(variables),
-                ]
-            )
-
+        if state_name in HOST_STATES:
+            clone = _derive_on_host(clones, state_name)
+        elif state_name in AUTH_STATES:
+            if secret_file is None:
+                raise RuntimeError(f"State '{state_name}' needs --secret-file")
+            clone = _derive_enrolled(clones, AUTH_STATES[state_name], secret_file)
+        else:
+            clone = _derive_preos(clones, STATES[state_name])
         conn.lookupByName(clone).rename(name, 0)
     finally:
         conn.close()
     LOGGER.info("Derived golden '%s' (%s) from '%s'", name, state_name, source_domain)
 
 
+@dataclass(frozen=True)
+class _Clones:
+    """Makes kept clones of the source golden for one derived golden."""
+
+    source_domain: str
+    # Names the clone and its volumes, which keep this name after the
+    # rename, so each derived golden gets its own.
+    name: str
+    connection_uri: str
+    pool_name: str
+    pool_dir: Path
+
+    def runner(self, test: str, workdir: Path) -> LibvirtImageRunner:
+        """Create a kept clone; the runner makes it on construction."""
+        return LibvirtImageRunner(
+            source_domain=self.source_domain,
+            suite_name=self.name,
+            test_name=test,
+            keep=True,
+            artifacts_dir=workdir / "artifacts",
+            connection_uri=self.connection_uri,
+            pool_name=self.pool_name,
+            pool_dir=self.pool_dir,
+        )
+
+
+def _run_kept(runner: LibvirtImageRunner, test: str) -> None:
+    """Boot the kept clone, run the test against it and shut it down."""
+    if runner.run(suite=str(SUITE), test=test) != 0:
+        raise RuntimeError(f"{test} failed; clone '{runner.domain_name}' was kept")
+
+
+def _derive_on_host(clones: _Clones, state_name: str) -> str:
+    """Edit a kept, never-started clone; return its name."""
+    with tempfile.TemporaryDirectory() as tmp:
+        runner = clones.runner(state_name, Path(tmp))
+        with runner:
+            domain = runner.conn.lookupByName(runner.domain_name)
+            HOST_STATES[state_name](runner, domain)
+        return str(runner.domain_name)
+
+
+def _derive_enrolled(clones: _Clones, auth_mode: str, secret_file: Path) -> str:
+    """Enroll a PIN or passphrase in a booted clone; return its name."""
+    secret = secret_file.read_text(encoding="utf-8").rstrip("\n")
+    if not secret:
+        raise RuntimeError(f"Secret file '{secret_file}' is empty")
+    with tempfile.TemporaryDirectory() as tmp:
+        body = Path(tmp) / "auth.json"
+        body.write_text(
+            json.dumps(
+                {"action": "replace-platform-key", "auth-mode": auth_mode,
+                 auth_mode: secret}
+            ),
+            encoding="utf-8",
+        )  # fmt: skip
+        os.environ["UGT_AUTH_BODY_FILE"] = str(body)
+        os.environ["UGT_AUTH_MODE"] = auth_mode
+        runner = clones.runner(ENROLL_TEST, Path(tmp))
+        with runner:
+            _run_kept(runner, ENROLL_TEST)
+        return str(runner.domain_name)
+
+
+def _derive_preos(clones: _Clones, state: FirmwareState) -> str:
+    """Copy an EFI binary in a booted clone, then set its db and load option."""
+    with tempfile.TemporaryDirectory() as tmp:
+        workdir = Path(tmp)
+        efi, db_args = build_efi(state, workdir)
+        os.environ["UGT_EFI_FILE"] = str(efi)
+        os.environ["UGT_SEED_PATH"] = state.seed_path
+        runner = clones.runner(TEST, workdir)
+        with runner:
+            _run_kept(runner, TEST)
+        # The runner has shut the kept clone down, so its NVRAM is safe to edit.
+        partition_file = runner.artifacts_path / PARTITION_FILE
+        part = SeedPartition.parse(partition_file.read_text(encoding="utf-8"))
+        variables = workdir / "variables.json"
+        variables.write_text(
+            json.dumps(load_option_variables(state, part)), encoding="utf-8"
+        )
+        nvram = runner.pool_dir / runner.nvram_volume_name
+        _run(
+            [
+                "virt-fw-vars",
+                "--inplace",
+                str(nvram),
+                *db_args,
+                "--set-json",
+                str(variables),
+            ]
+        )
+        return str(runner.domain_name)
+
+
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--source-domain", required=True, help="Golden to derive from")
-    parser.add_argument("--state", required=True, choices=sorted(STATES))
+    parser.add_argument(
+        "--state", required=True, choices=sorted([*STATES, *HOST_STATES, *AUTH_STATES])
+    )
+    parser.add_argument(
+        "--secret-file",
+        type=Path,
+        help="File holding the PIN or passphrase for the enroll states",
+    )
     parser.add_argument("--name", required=True, help="Name of the derived golden")
     parser.add_argument("--connection-uri", default=DEFAULT_CONNECTION_URI)
     parser.add_argument("--pool-name", default=DEFAULT_POOL_NAME)
@@ -347,6 +505,7 @@ def main() -> None:
             args.connection_uri,
             args.pool_name,
             args.pool_dir,
+            args.secret_file,
         )
     except RuntimeError as err:
         sys.exit(f"error: {err}")
