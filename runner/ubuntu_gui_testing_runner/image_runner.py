@@ -265,7 +265,12 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
     async def _run_yarf(
         self, suite: str, test: str, vsock_cid: int, vnc_port: int
     ) -> int:
-        robot_variables = {"CID": str(vsock_cid)}
+        robot_variables = {
+            "CID": str(vsock_cid),
+            # For keywords that control the domain from the host with virsh.
+            "DOMAIN": self.domain_name,
+            "LIBVIRT_URI": self.connection_uri,
+        }
         if self.mount_source_domain is not None:
             robot_variables["DEVICE"] = self.mount_source_domain
         if self.recovery_key:

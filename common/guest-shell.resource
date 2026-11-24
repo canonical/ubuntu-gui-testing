@@ -5,6 +5,7 @@ Documentation       Run commands as root in the guest over SSH on its vsock CID.
 ...                 SSHLibrary's Login and common.resource's Log In normalize to
 ...                 the same keyword name.
 
+Library             Process
 Library             SSHLibrary
 
 
@@ -56,3 +57,15 @@ Cut Guest Power When File Is Written
     ...    cat /proc/sys/kernel/random/boot_id
     ${boot_id}    Run In Guest    sh -c '${arm}' '${path}' '${watcher}'
     RETURN    ${boot_id}
+
+Cut Guest Power From Host
+    [Documentation]    Reset the guest at once from the host, like pulling its
+    ...    power, without any help from the guest. Use it where the guest
+    ...    cannot arm a watcher, such as in firmware or the initrd. The domain
+    ...    keeps running, so the VNC display and the CID stay the same. Needs
+    ...    virsh on the host and the DOMAIN and LIBVIRT_URI variables the
+    ...    runner passes.
+    ${result}    Process.Run Process    virsh    -c    ${LIBVIRT_URI}
+    ...    reset    ${DOMAIN}    timeout=60s
+    Should Be Equal As Integers    ${result.rc}    0
+    ...    msg=virsh reset ${DOMAIN} failed: ${result.stderr}

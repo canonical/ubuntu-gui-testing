@@ -388,6 +388,8 @@ def test_run_yarf_passes_recovery_key_variable_when_present(tmp_path: Path) -> N
                 5901,
                 robot_variables={
                     "CID": "3",
+                    "DOMAIN": runner.domain_name,
+                    "LIBVIRT_URI": runner.connection_uri,
                     "RECOVERY_KEY": "12345-67890-11111-22222-33333-44444-55555-66666",
                 },
             )
@@ -428,7 +430,12 @@ def test_run_yarf_passes_device_when_mount_source_domain_is_enabled(
                 "suite",
                 "test",
                 5901,
-                robot_variables={"CID": "3", "DEVICE": "/dev/sdb"},
+                robot_variables={
+                    "CID": "3",
+                    "DOMAIN": runner.domain_name,
+                    "LIBVIRT_URI": runner.connection_uri,
+                    "DEVICE": "/dev/sdb",
+                },
             )
         finally:
             runner.close()
