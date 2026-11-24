@@ -303,6 +303,60 @@ def test_extracts_recovery_key_from_source_metadata(tmp_path: Path) -> None:
             runner.close()
 
 
+def test_copies_recovery_key_metadata_to_clone(tmp_path: Path) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+
+    source_xml = SOURCE_DOMAIN_XML_WITH_RECOVERY_KEY.replace(
+        "/pool/source-VARS.fd", str(nvram_source)
+    )
+    conn = _make_conn(source_xml=source_xml)
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with patch("libvirt.open", return_value=conn):
+        runner = LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+        )
+        try:
+            conn.defineXML.return_value.setMetadata.assert_called_once_with(
+                libvirt.VIR_DOMAIN_METADATA_ELEMENT,
+                "<ugt><recovery-key>12345-67890-11111-22222-33333-44444-55555-66666</recovery-key></ugt>",
+                "ugt",
+                "https://canonical.com/ubuntu-gui-testing",
+                libvirt.VIR_DOMAIN_AFFECT_CONFIG,
+            )
+        finally:
+            runner.close()
+
+
+def test_clone_without_recovery_key_gets_no_metadata(tmp_path: Path) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+    conn = _make_conn(
+        source_xml=SOURCE_DOMAIN_XML.replace("/pool/source-VARS.fd", str(nvram_source))
+    )
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with patch("libvirt.open", return_value=conn):
+        runner = LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+        )
+        try:
+            conn.defineXML.return_value.setMetadata.assert_not_called()
+        finally:
+            runner.close()
+
+
 def test_run_yarf_passes_recovery_key_variable_when_present(tmp_path: Path) -> None:
     nvram_source = tmp_path / "source-VARS.fd"
     nvram_source.write_bytes(b"nvram-data")
