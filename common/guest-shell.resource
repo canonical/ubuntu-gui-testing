@@ -30,3 +30,25 @@ Run In Guest
     ...    return_stderr=True    return_rc=True    timeout=${timeout}
     Should Be Equal As Integers    ${rc}    0    msg=${command} failed: ${stderr}
     RETURN    ${stdout}
+
+Cut Guest Power When File Is Written
+    [Documentation]    Arm a power cut: reset the guest as soon as the file at the
+    ...    path is written (created, replaced or modified), at once and without
+    ...    syncing its disks. A watcher in the guest compares the file's inode
+    ...    and times with those at arming every 20 ms and gives up after 10
+    ...    minutes, so arm it just before the action that writes the file.
+    ...    Returns the boot ID at arming: after reconnecting with Open Guest
+    ...    Shell, check that /proc/sys/kernel/random/boot_id changed, which
+    ...    proves the guest was reset. The domain keeps running, so the VNC
+    ...    display and the CID stay the same.
+    [Arguments]    ${path}
+    ${stat}    Set Variable    stat -c "%i %y %z" "$0"
+    ${watcher}    Catenate
+    ...    until [ -f "$0" ] && [ "$(${stat})" != "$1" ]; do sleep 0.02; done;
+    ...    echo b > /proc/sysrq-trigger
+    ${arm}    Catenate
+    ...    s=$(${stat} 2>/dev/null);
+    ...    setsid timeout 10m sh -c "$1" "$0" "$s" >/dev/null 2>&1 </dev/null &
+    ...    cat /proc/sys/kernel/random/boot_id
+    ${boot_id}    Run In Guest    sh -c '${arm}' '${path}' '${watcher}'
+    RETURN    ${boot_id}
