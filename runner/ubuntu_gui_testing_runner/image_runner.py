@@ -5,6 +5,8 @@ import logging
 import shutil
 from pathlib import Path
 from typing import Any
+from xml.etree.ElementTree import Element
+from xml.etree.ElementTree import tostring as xml_tostring
 
 import defusedxml.ElementTree as ET
 import libvirt  # type: ignore[import-untyped]
@@ -34,9 +36,13 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
         domain_template: Path | None = None,
         overlay_template: Path | None = None,
         mount_source_domain: str | None = None,
+        swtpm_state_dir: Path = DEFAULT_SWTPM_STATE_DIR,
         **kwargs: Any,
     ) -> None:
         self.source_domain_name = source_domain
+        self.swtpm_state_dir = swtpm_state_dir
+        self.source_os: Element | None = None
+        self.source_has_tpm = True
         self.recovery_key: str | None = None
         self.mount_source_domain = mount_source_domain
 
@@ -69,7 +75,17 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
                 f"Source domain '{self.source_domain_name}' not found"
             ) from err
 
+        if source.isActive():
+            raise RuntimeError(
+                f"Source domain '{self.source_domain_name}' is running; shut it "
+                "down first, as its disk and NVRAM could change while copied"
+            )
+
         xml = ET.fromstring(source.XMLDesc(0))
+        # Clones keep the source's firmware and TPM presence, so a golden
+        # prepared without Secure Boot or without a TPM stays that way.
+        self.source_os = xml.find("os")
+        self.source_has_tpm = xml.find("devices/tpm") is not None
 
         # Find the primary disk image (first virtio disk)
         devices = xml.find("devices")
@@ -110,7 +126,7 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
         uuid_elem = xml.find("uuid")
         self.source_tpm_state_dir: Path | None
         if uuid_elem is not None and uuid_elem.text:
-            self.source_tpm_state_dir = DEFAULT_SWTPM_STATE_DIR / uuid_elem.text
+            self.source_tpm_state_dir = self.swtpm_state_dir / uuid_elem.text
         else:
             self.source_tpm_state_dir = None
 
@@ -178,7 +194,7 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
             return
 
         new_uuid = self.domain.UUIDString()
-        dest_tpm_dir = DEFAULT_SWTPM_STATE_DIR / new_uuid
+        dest_tpm_dir = self.swtpm_state_dir / new_uuid
         shutil.copytree(self.source_tpm_state_dir, dest_tpm_dir)
         LOGGER.info(
             "Copied TPM state from '%s' to '%s'",
@@ -197,13 +213,34 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
                 "nvram": str(self.pool_dir / self.nvram_volume_name),
             },
         )
-        self._domain = self.conn.defineXML(domain_xml)
+        self._domain = self.conn.defineXML(self._match_source(domain_xml))
 
         if self._domain is None:
             raise RuntimeError(f"Unable to define domain '{self.domain_name}'")
         # Keeps a kept clone usable as --source-domain.
         if self.recovery_key is not None:
             self._set_recovery_key_metadata(self.recovery_key)
+
+    def _match_source(self, domain_xml: str) -> str:
+        """Give the clone the source's firmware and TPM presence."""
+        xml = ET.fromstring(domain_xml)
+        os_elem = xml.find("os")
+        source_os = self.source_os
+        has_loader = source_os is not None and source_os.find("loader") is not None
+        if source_os is not None and os_elem is not None and has_loader:
+            # libvirt checks the loader against the firmware features, so
+            # both come from the source.
+            for tag in ("firmware", "loader"):
+                for elem in os_elem.findall(tag):
+                    os_elem.remove(elem)
+                source_elem = source_os.find(tag)
+                if source_elem is not None:
+                    os_elem.append(source_elem)
+        devices = xml.find("devices")
+        tpm = xml.find("devices/tpm")
+        if not self.source_has_tpm and devices is not None and tpm is not None:
+            devices.remove(tpm)
+        return xml_tostring(xml, encoding="unicode")
 
     def _usb_disk_xml(self) -> str:
         if self.mount_source_domain is None:
@@ -264,14 +301,14 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
                     await yarf_process.wait()
 
     def close(self) -> None:
-        # Clean up the copied TPM state directory
+        tpm_dir = None
         if self._domain is not None and not self.keep:
-            tpm_dir = DEFAULT_SWTPM_STATE_DIR / self._domain.UUIDString()
-            if tpm_dir.exists():
-                try:
-                    shutil.rmtree(tpm_dir)
-                except OSError:
-                    LOGGER.exception(
-                        "Failed to delete TPM state directory '%s'", tpm_dir
-                    )
+            tpm_dir = self.swtpm_state_dir / self._domain.UUIDString()
+        # Delete the copied TPM state only once the domain is gone, as its
+        # swtpm may still write to it until then.
         super().close()
+        if tpm_dir is not None and tpm_dir.exists():
+            try:
+                shutil.rmtree(tpm_dir)
+            except OSError:
+                LOGGER.exception("Failed to delete TPM state directory '%s'", tpm_dir)
