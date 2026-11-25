@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from datetime import UTC, datetime
 from pathlib import Path
+from time import monotonic
 from typing import Any
 from xml.etree.ElementTree import tostring as xml_tostring
 from xml.sax.saxutils import escape
@@ -40,11 +42,13 @@ class LibvirtIsoRunner(_BaseLibvirtRunner):
         volume_template: Path | None = None,
         test_username: str = DEFAULT_TEST_USERNAME,
         test_password: str = DEFAULT_TEST_PASSWORD,
+        shutdown_timeout: int = 120,
         **kwargs: Any,
     ) -> None:
         self.iso_path = str(Path(iso).resolve())
         self.test_username = test_username
         self.test_password = test_password
+        self.shutdown_timeout = shutdown_timeout
 
         self.volume_template_path = (
             volume_template.resolve()
@@ -209,6 +213,56 @@ class LibvirtIsoRunner(_BaseLibvirtRunner):
 
     async def _handle_reboot(self) -> None:
         """Poll until the transient domain shuts down, then start the persistent one."""
+        shutdown_requested_at: float | None = None
+        forced_off = False
+        shutdown_marker = self.artifacts_path / "phase1-shutdown-requested"
         while self.domain.isActive():
+            if shutdown_requested_at is None and shutdown_marker.exists():
+                shutdown_requested_at = monotonic()
+                LOGGER.info(
+                    "Marked installer shutdown started for domain '%s'",
+                    self.domain_name,
+                )
+
+            if shutdown_requested_at is not None:
+                elapsed = monotonic() - shutdown_requested_at
+                if self.shutdown_timeout > 0 and elapsed >= self.shutdown_timeout:
+                    try:
+                        # This is an unclean power loss; inspect the artifact before
+                        # treating post-force-off ZFS/LUKS/TPM-FDE failures as
+                        # regressions.
+                        self.domain.destroy()
+                    except libvirt.libvirtError as error:
+                        if not self._is_inactive_domain_error(error):
+                            raise
+                    else:
+                        timestamp = datetime.now(UTC).isoformat()
+                        artifact = self.artifacts_path / "phase1-forced-off"
+                        artifact.parent.mkdir(parents=True, exist_ok=True)
+                        artifact.write_text(
+                            f"timestamp={timestamp}\nelapsed_wait={elapsed:g}\n",
+                            encoding="utf-8",
+                        )
+                        LOGGER.warning(
+                            "Force-off of installer domain '%s' after %.1f seconds "
+                            "(LP: #2169202)",
+                            self.domain_name,
+                            elapsed,
+                        )
+                        forced_off = True
+                    break
             await asyncio.sleep(1)
+
+        if shutdown_requested_at is not None and not forced_off:
+            elapsed = monotonic() - shutdown_requested_at
+            LOGGER.info(
+                "Installer shutdown for domain '%s' completed after %.1f seconds",
+                self.domain_name,
+                elapsed,
+            )
         self.domain.create()
+
+    def _is_inactive_domain_error(self, error: libvirt.libvirtError) -> bool:
+        """Return whether destroy failed because the domain stopped concurrently."""
+        del error
+        return not self.domain.isActive()
