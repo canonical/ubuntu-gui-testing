@@ -10,6 +10,7 @@ from ubuntu_gui_testing_runner.constants import (
     DEFAULT_ARTIFACTS_DIR,
     DEFAULT_CONNECTION_URI,
     DEFAULT_POOL_NAME,
+    DEFAULT_SHUTDOWN_TIMEOUT,
 )
 
 
@@ -60,7 +61,7 @@ def test_defaults_applied_for_iso_mode(monkeypatch: pytest.MonkeyPatch) -> None:
     assert args.connection_uri == DEFAULT_CONNECTION_URI
     assert args.pool_name == DEFAULT_POOL_NAME
     assert args.artifacts_dir == DEFAULT_ARTIFACTS_DIR
-    assert args.shutdown_timeout == 120
+    assert args.shutdown_timeout == DEFAULT_SHUTDOWN_TIMEOUT
 
 
 def test_shutdown_timeout_accepts_zero(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -148,7 +149,7 @@ def test_default_shutdown_timeout_is_passed_to_iso_runner(
         volume_template=None,
         test_username="user",
         test_password="password",
-        shutdown_timeout=120,
+        shutdown_timeout=DEFAULT_SHUTDOWN_TIMEOUT,
         pool_template=None,
         artifacts_dir=None,
         connection_uri=None,
@@ -162,7 +163,7 @@ def test_default_shutdown_timeout_is_passed_to_iso_runner(
     with pytest.raises(SystemExit):
         __main__.main()
 
-    assert iso_runner.call_args.kwargs["shutdown_timeout"] == 120
+    assert iso_runner.call_args.kwargs["shutdown_timeout"] == DEFAULT_SHUTDOWN_TIMEOUT
 
 
 def test_defaults_applied_for_image_mode(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -17,6 +17,7 @@ from ubuntu_gui_testing_runner.base import (
 )
 from ubuntu_gui_testing_runner.constants import (
     DEFAULT_ISO_DOMAIN_TEMPLATE,
+    DEFAULT_SHUTDOWN_TIMEOUT,
     DEFAULT_TEST_PASSWORD,
     DEFAULT_TEST_USERNAME,
     DEFAULT_VOLUME_TEMPLATE,
@@ -42,7 +43,7 @@ class LibvirtIsoRunner(_BaseLibvirtRunner):
         volume_template: Path | None = None,
         test_username: str = DEFAULT_TEST_USERNAME,
         test_password: str = DEFAULT_TEST_PASSWORD,
-        shutdown_timeout: int = 120,
+        shutdown_timeout: int = DEFAULT_SHUTDOWN_TIMEOUT,
         **kwargs: Any,
     ) -> None:
         self.iso_path = str(Path(iso).resolve())

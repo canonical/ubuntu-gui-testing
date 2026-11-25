@@ -8,6 +8,7 @@ from ubuntu_gui_testing_runner.constants import (
     DEFAULT_POOL_DIR,
     DEFAULT_POOL_NAME,
     DEFAULT_POOL_TEMPLATE,
+    DEFAULT_SHUTDOWN_TIMEOUT,
     DEFAULT_SWTPM_STATE_DIR,
     DEFAULT_TEST_PASSWORD,
     DEFAULT_TEST_USERNAME,
@@ -51,7 +52,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--shutdown-timeout",
         type=_non_negative_int,
-        default=120,
+        default=DEFAULT_SHUTDOWN_TIMEOUT,
         metavar="SECONDS",
         help=(
             "Seconds to wait for marked installer shutdown "
