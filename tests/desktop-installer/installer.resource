@@ -297,12 +297,17 @@ Wait For Install To Finish
     Move Pointer To "Restart now"
     Click LEFT Button
 
+Confirm Installation Medium Removal
+    [Documentation]    Confirms the installation medium removal prompt and records the shutdown request
+    Match Text       Please remove        120
+    ${combo}    Create List    Return
+    Keys Combo    ${combo}
+    Create File    ${OUTPUT DIR}${/}phase1-shutdown-requested
+
 Wait For ZFS Encrypted Reboot To Finish
     [Documentation]    Waits for an encrypted reboot to finish, enters passphrase, and logs in
 
-    ${combo}    Create List    Return
-    Match Text       Please remove        120
-    Keys Combo    ${combo}
+    Confirm Installation Medium Removal
 
     Restart Stream And Wait For Unlock Disk
 
@@ -374,9 +379,7 @@ Restart Stream And Wait For Login
 Wait For Reboot To Finish
     [Documentation]    Login Prompt
     [Arguments]     ${template}=generic
-    ${combo}    Create List    Return
-    Match Text       Please remove        120
-    Keys Combo    ${combo}
+    Confirm Installation Medium Removal
 
     Wait Until Keyword Succeeds    1800 sec    1 sec    Restart Stream And Wait For Login    ${template}
     Move Pointer To ${T}/${template}/login-prompt.png
@@ -384,6 +387,7 @@ Wait For Reboot To Finish
 
     Match Text    Password    60
     Type String    ubuntu
+    ${combo}    Create List    Return
     Keys Combo    ${combo}
     Match Text      Welcome to Ubuntu     360
     Move Pointer To (300, 300)
@@ -452,9 +456,7 @@ Entire Disk With LVM Plus Encryption
 
 Wait For LVM Encrypted Reboot To Finish
     [Documentation]    Waits for an encrypted reboot to finish, enters passphrase, and logs in
-    ${combo}    Create List    Return
-    Match Text       Please remove        120
-    Keys Combo    ${combo}
+    Confirm Installation Medium Removal
 
     Restart Stream And Wait For Passphrase Entry
 
