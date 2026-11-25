@@ -110,6 +110,7 @@ def _make_conn(
 
     source_domain = MagicMock()
     source_domain.XMLDesc.return_value = source_xml
+    source_domain.isActive.return_value = 0
 
     def lookup(name: str) -> MagicMock:
         if name == "source" and source_exists:
@@ -220,25 +221,21 @@ def test_copies_tpm_state_when_source_exists(tmp_path: Path) -> None:
     pool_dir = tmp_path / "pool"
     pool_dir.mkdir()
 
-    with (
-        patch("libvirt.open", return_value=conn),
-        patch(
-            "ubuntu_gui_testing_runner.image_runner.DEFAULT_SWTPM_STATE_DIR",
-            tmp_path / "swtpm",
-        ),
-    ):
+    with patch("libvirt.open", return_value=conn):
         runner = LibvirtImageRunner(
             source_domain="source",
             suite_name="test",
             test_name="basic",
             pool_dir=pool_dir,
+            swtpm_state_dir=tmp_path / "swtpm",
         )
+        dest_tpm_dir = tmp_path / "swtpm" / "11111111-2222-3333-4444-555555555555"
         try:
-            dest_tpm_dir = tmp_path / "swtpm" / "11111111-2222-3333-4444-555555555555"
-            assert dest_tpm_dir.exists()
             assert (dest_tpm_dir / "tpm2-00.permall").read_bytes() == b"tpm-state"
         finally:
             runner.close()
+        assert not dest_tpm_dir.exists()
+        assert source_tpm_dir.exists()
 
 
 def test_skips_tpm_copy_when_source_has_no_tpm_state(tmp_path: Path) -> None:
@@ -391,6 +388,8 @@ def test_run_yarf_passes_recovery_key_variable_when_present(tmp_path: Path) -> N
                 5901,
                 robot_variables={
                     "CID": "3",
+                    "DOMAIN": runner.domain_name,
+                    "LIBVIRT_URI": runner.connection_uri,
                     "RECOVERY_KEY": "12345-67890-11111-22222-33333-44444-55555-66666",
                 },
             )
@@ -431,7 +430,12 @@ def test_run_yarf_passes_device_when_mount_source_domain_is_enabled(
                 "suite",
                 "test",
                 5901,
-                robot_variables={"CID": "3", "DEVICE": "/dev/sdb"},
+                robot_variables={
+                    "CID": "3",
+                    "DOMAIN": runner.domain_name,
+                    "LIBVIRT_URI": runner.connection_uri,
+                    "DEVICE": "/dev/sdb",
+                },
             )
         finally:
             runner.close()
@@ -459,7 +463,7 @@ def test_mount_source_domain_uses_matching_usb_target(
         )
         try:
             domain_xml = conn.defineXML.call_args.args[0]
-            assert '<target dev="sdb" bus="usb"/>' in domain_xml
+            assert '<target dev="sdb" bus="usb"' in domain_xml
         finally:
             runner.close()
 
@@ -523,3 +527,58 @@ def test_logs_when_recovery_key_metadata_empty(
             )
         finally:
             runner.close()
+
+
+def _runner(tmp_path: Path, source_xml: str, conn: MagicMock | None = None, **kwargs):  # type: ignore[no-untyped-def]
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+    conn = conn or _make_conn(
+        source_xml=source_xml.replace("/pool/source-VARS.fd", str(nvram_source))
+    )
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir(exist_ok=True)
+    with patch("libvirt.open", return_value=conn):
+        return conn, LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+            **kwargs,
+        )
+
+
+def test_refuses_running_source_domain(tmp_path: Path) -> None:
+    conn = _make_conn()
+    conn.lookupByName("source").isActive.return_value = 1
+    with pytest.raises(RuntimeError, match="is running"):
+        _runner(tmp_path, SOURCE_DOMAIN_XML, conn)
+
+
+def test_clone_keeps_source_firmware_and_tpm(tmp_path: Path) -> None:
+    source_xml = SOURCE_DOMAIN_XML.replace(
+        "<nvram>",
+        '<firmware><feature enabled="no" name="secure-boot"/></firmware>'
+        '<loader readonly="yes" type="pflash">/usr/share/OVMF/OVMF_CODE_4M.fd</loader>'
+        "<nvram>",
+    ).replace("</devices>", '<tpm model="tpm-crb"/></devices>')
+    conn, runner = _runner(tmp_path, source_xml)
+    try:
+        defined = conn.defineXML.call_args.args[0]
+        assert ">/usr/share/OVMF/OVMF_CODE_4M.fd</loader>" in defined
+        assert "OVMF_CODE_4M.ms.fd" not in defined
+        assert '<feature enabled="no" name="secure-boot"' in defined
+        assert 'enabled="yes"' not in defined
+        assert "<tpm" in defined
+    finally:
+        runner.close()
+
+
+def test_clone_has_no_tpm_when_source_has_none(tmp_path: Path) -> None:
+    conn, runner = _runner(tmp_path, SOURCE_DOMAIN_XML)
+    try:
+        defined = conn.defineXML.call_args.args[0]
+        assert "<tpm" not in defined
+        # No loader in the source: the template's Secure Boot loader stays.
+        assert "OVMF_CODE_4M.ms.fd" in defined
+    finally:
+        runner.close()

@@ -10,8 +10,13 @@ from pathlib import Path
 import pytest
 
 from ubuntu_gui_testing_runner.fde_golden import (
+    AUTH_STATES,
     EFI_APPLICATION,
     EFI_BOOT_SERVICE_DRIVER,
+    ENROLL_TEST,
+    HOST_STATES,
+    PLAIN_OVMF_CODE,
+    PLAIN_OVMF_VARS,
     STATES,
     SUITE,
     TEST,
@@ -21,6 +26,8 @@ from ubuntu_gui_testing_runner.fde_golden import (
     load_option,
     load_option_variables,
     minimal_efi_image,
+    with_plain_ovmf,
+    without_tpm,
 )
 
 PART = SeedPartition(
@@ -75,10 +82,11 @@ def test_variables_set_option_and_order_for_sysprep() -> None:
     assert variables[1]["data"] == "0100"
 
 
-def test_suite_contains_the_test() -> None:
+@pytest.mark.parametrize("test", [TEST, ENROLL_TEST])
+def test_suite_contains_the_test(test: str) -> None:
     # YARF copies only --suite to a temporary directory, so the suite must be
     # the parent that holds common/ and select the test by name.
-    robot = SUITE / TEST.lower() / f"{TEST.lower()}.robot"
+    robot = SUITE / test.lower() / f"{test.lower()}.robot"
     assert robot.is_file()
     assert (SUITE / "common/guest-shell.resource").is_file()
 
@@ -120,3 +128,33 @@ def test_build_efi_produces_db_entry_the_firmware_accepts(
         trusted = ssl.PEM_cert_to_DER_cert(Path(db_args[2]).read_text()).hex()
     assert trusted in stored["db"]
     assert efi.is_file()
+
+
+DOMAIN_XML = """<domain><os firmware="efi"><firmware>\
+<feature enabled="yes" name="enrolled-keys"/>\
+<feature enabled="yes" name="secure-boot"/>\
+</firmware><loader readonly="yes" secure="yes" type="pflash">\
+/usr/share/OVMF/OVMF_CODE_4M.ms.fd</loader>\
+<nvram template="/usr/share/OVMF/OVMF_VARS_4M.ms.fd">/x.fd</nvram></os>\
+<devices><disk/><tpm model="tpm-crb"/></devices></domain>"""
+
+
+def test_without_tpm_keeps_other_devices() -> None:
+    xml = without_tpm(DOMAIN_XML)
+    assert "<tpm" not in xml
+    assert "<disk" in xml
+    with pytest.raises(ValueError):
+        without_tpm(xml)
+
+
+def test_plain_ovmf_drops_secure_boot() -> None:
+    xml = with_plain_ovmf(DOMAIN_XML)
+    assert f">{PLAIN_OVMF_CODE}</loader>" in xml
+    assert 'secure="no"' in xml
+    assert 'enabled="yes"' not in xml
+    assert f'<nvram template="{PLAIN_OVMF_VARS}">/x.fd</nvram>' in xml
+
+
+def test_host_and_guest_state_names_are_distinct() -> None:
+    names = [*HOST_STATES, *STATES, *AUTH_STATES]
+    assert len(names) == len(set(names))
