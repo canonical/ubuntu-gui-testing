@@ -15,6 +15,14 @@ from ubuntu_gui_testing_runner.constants import (
 )
 
 
+def _non_negative_int(value: str) -> int:
+    """Parse an integer CLI value that must not be negative."""
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("must be greater than or equal to 0")
+    return parsed
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -39,6 +47,16 @@ def parse_args() -> argparse.Namespace:
         default=None,
         metavar="DEVICE",
         help="Attach a second overlay of the source domain as a USB disk",
+    )
+    parser.add_argument(
+        "--shutdown-timeout",
+        type=_non_negative_int,
+        default=120,
+        metavar="SECONDS",
+        help=(
+            "Seconds to wait for marked installer shutdown "
+            "(0 disables force-off; default: %(default)s)"
+        ),
     )
 
     source = parser.add_mutually_exclusive_group(required=True)

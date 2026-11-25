@@ -24,6 +24,7 @@ def main() -> None:
             volume_template=args.volume_template,
             test_username=args.test_username,
             test_password=args.test_password,
+            shutdown_timeout=args.shutdown_timeout,
             pool_template=args.pool_template,
             artifacts_dir=args.artifacts_dir,
             connection_uri=args.connection_uri,
