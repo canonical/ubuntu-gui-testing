@@ -116,11 +116,16 @@ suites:
             {
                 "git": {
                     "url": "https://github.com/canonical/ubuntu-gui-testing/",
-                    "branches": ["main"],
+                    "branches": ["job-generator"],
                 }
             }
         ]
         assert template["triggers"] == "{obj:triggers}"
+        assert template["wrappers"] == [
+            {"timeout": {"timeout": 60, "fail": True, "type": "no-activity"}},
+            "workspace-cleanup",
+            "timestamps",
+        ]
 
 
 def test_job_template_declares_yarf_ref_parameter(tmp_path: Path) -> None:

@@ -52,6 +52,11 @@ def _job_template(template_id: str, builders: list[Any]) -> dict[str, Any]:
             }
         ],
         "triggers": "{obj:triggers}",
+        "wrappers": [
+            {"timeout": {"timeout": 60, "fail": True, "type": "no-activity"}},
+            "workspace-cleanup",
+            "timestamps",
+        ],
         "builders": builders,
         "publishers": ["publish-artifacts"],
     }
