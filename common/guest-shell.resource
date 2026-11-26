@@ -20,8 +20,10 @@ Open Guest Shell
     ...    proxy_cmd=/usr/bin/socat - VSOCK-CONNECT:${CID}:22
 
 Run In Guest
-    [Documentation]    Run a command as root; fail on non-zero exit, return stdout; wrap pipes and redirects in sh -c.
-    [Arguments]    ${command}    ${timeout}=60s
+    [Documentation]    Run a command as root; fail on non-zero exit, return stdout.
+    ...    Only the first pipeline stage runs as root, so callers must wrap
+    ...    pipes, redirects, and compound commands in sh -c.
+    [Arguments]    ${command}    ${timeout}=600s
     # Not sudo=True: SSHLibrary 3.8.0 sends two blank lines before the password (robotframework/SSHLibrary#412).
     ${stdout}    ${stderr}    ${rc}    SSHLibrary.Execute Command
     ...    echo '${GUEST_PASSWORD}' | sudo -k --stdin --prompt '' ${command}
