@@ -76,6 +76,7 @@ If `--mount-source-domain` is passed without a value, the default device is
 | `--swtpm-state-dir` | Path to swtpm state (default: `~/.config/libvirt/qemu/swtpm`) |
 | `--test-username` | Guest SSH username (default: `ubuntu`) |
 | `--test-password` | Guest SSH password (default: `ubuntu`) |
+| `--shutdown-timeout SECONDS` | ISO runner only: seconds to wait for a marked installer shutdown before force-off (default: `120`; `0` disables force-off) |
 | `--domain-template` | Override domain XML template |
 | `--pool-template` | Override pool XML template |
 | `--volume-template` | Override volume XML template |

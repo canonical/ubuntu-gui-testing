@@ -370,6 +370,14 @@ def _make_runner_for_lifecycle(tmp_path: Path) -> LibvirtIsoRunner:
         )
 
 
+def _mark_shutdown(runner: LibvirtIsoRunner) -> MagicMock:
+    """Mark installer shutdown and attach a controllable transient domain."""
+    runner.artifacts_path.mkdir(parents=True, exist_ok=True)
+    (runner.artifacts_path / "phase1-shutdown-requested").touch()
+    runner._domain = MagicMock()
+    return runner._domain
+
+
 def test_reboot_starts_persistent_domain_after_transient_shuts_down(
     tmp_path: Path,
 ) -> None:
@@ -385,6 +393,154 @@ def test_reboot_starts_persistent_domain_after_transient_shuts_down(
             asyncio.run(runner._handle_reboot())
 
         runner._domain.create.assert_called_once()
+    finally:
+        runner.close()
+
+
+def test_reboot_forces_off_marked_active_domain_after_shutdown_timeout(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    runner = _make_runner_for_lifecycle(tmp_path)
+    runner.shutdown_timeout = 2
+    domain = _mark_shutdown(runner)
+    domain.isActive.return_value = True
+
+    try:
+        with (
+            patch(
+                "ubuntu_gui_testing_runner.iso_runner.monotonic", side_effect=[10, 12]
+            ),
+            patch("asyncio.sleep", new_callable=AsyncMock),
+            caplog.at_level("WARNING"),
+        ):
+            asyncio.run(runner._handle_reboot())
+
+        domain.destroy.assert_called_once()
+        domain.create.assert_called_once()
+        artifact = runner.artifacts_path / "phase1-forced-off"
+        assert artifact.exists()
+        assert "elapsed_wait=2" in artifact.read_text()
+        assert "LP: #2169202" in caplog.text
+        assert runner.domain_name in caplog.text
+    finally:
+        runner.close()
+
+
+def test_shutdown_timeout_defaults_to_120_seconds(tmp_path: Path) -> None:
+    runner = _make_runner_for_lifecycle(tmp_path)
+    domain = _mark_shutdown(runner)
+    domain.isActive.side_effect = [True, False, 0]
+
+    try:
+        with (
+            patch(
+                "ubuntu_gui_testing_runner.iso_runner.monotonic",
+                side_effect=[0, 119, 119],
+            ),
+            patch("asyncio.sleep", new_callable=AsyncMock),
+        ):
+            asyncio.run(runner._handle_reboot())
+
+        domain.destroy.assert_not_called()
+        domain.create.assert_called_once()
+    finally:
+        runner.close()
+
+
+def test_marked_shutdown_that_finishes_logs_duration_without_forcing_off(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    runner = _make_runner_for_lifecycle(tmp_path)
+    domain = _mark_shutdown(runner)
+    domain.isActive.side_effect = [True, False, 0]
+
+    try:
+        with (
+            patch(
+                "ubuntu_gui_testing_runner.iso_runner.monotonic",
+                side_effect=[10, 12, 12],
+            ),
+            patch("asyncio.sleep", new_callable=AsyncMock),
+            caplog.at_level("INFO"),
+        ):
+            asyncio.run(runner._handle_reboot())
+
+        domain.destroy.assert_not_called()
+        domain.create.assert_called_once()
+        assert "completed after 2.0 seconds" in caplog.text
+        assert not (runner.artifacts_path / "phase1-forced-off").exists()
+    finally:
+        runner.close()
+
+
+def test_unmarked_shutdown_is_never_forced_off(tmp_path: Path) -> None:
+    runner = _make_runner_for_lifecycle(tmp_path)
+    runner._domain = MagicMock()
+    runner._domain.isActive.side_effect = [True, False, 0]
+
+    try:
+        with patch("asyncio.sleep", new_callable=AsyncMock):
+            asyncio.run(runner._handle_reboot())
+
+        runner._domain.destroy.assert_not_called()
+        runner._domain.create.assert_called_once()
+    finally:
+        runner.close()
+
+
+def test_zero_shutdown_timeout_disables_force_off(tmp_path: Path) -> None:
+    runner = _make_runner_for_lifecycle(tmp_path)
+    runner.shutdown_timeout = 0
+    domain = _mark_shutdown(runner)
+    domain.isActive.side_effect = [True, False, 0]
+
+    try:
+        with patch("asyncio.sleep", new_callable=AsyncMock):
+            asyncio.run(runner._handle_reboot())
+
+        domain.destroy.assert_not_called()
+        domain.create.assert_called_once()
+    finally:
+        runner.close()
+
+
+def test_force_off_race_with_domain_shutdown_still_starts_phase_two(
+    tmp_path: Path,
+) -> None:
+    runner = _make_runner_for_lifecycle(tmp_path)
+    runner.shutdown_timeout = 2
+    domain = _mark_shutdown(runner)
+    domain.isActive.side_effect = [True, False, 0]
+    domain.destroy.side_effect = libvirt.libvirtError("domain is already inactive")
+
+    try:
+        with patch(
+            "ubuntu_gui_testing_runner.iso_runner.monotonic", side_effect=[10, 12, 12]
+        ):
+            asyncio.run(runner._handle_reboot())
+
+        domain.create.assert_called_once()
+    finally:
+        runner.close()
+
+
+def test_force_off_propagates_unexpected_libvirt_error(tmp_path: Path) -> None:
+    runner = _make_runner_for_lifecycle(tmp_path)
+    runner.shutdown_timeout = 2
+    domain = _mark_shutdown(runner)
+    domain.isActive.return_value = True
+    domain.destroy.side_effect = libvirt.libvirtError("not running")
+
+    try:
+        with (
+            patch(
+                "ubuntu_gui_testing_runner.iso_runner.monotonic", side_effect=[10, 12]
+            ),
+            pytest.raises(libvirt.libvirtError, match="not running"),
+        ):
+            asyncio.run(runner._handle_reboot())
     finally:
         runner.close()
 
