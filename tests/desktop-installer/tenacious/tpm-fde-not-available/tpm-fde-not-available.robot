@@ -12,7 +12,7 @@ Grub Menu
 
 Ensure Not Unfocused After Boot
     [Documentation]         Workaround LP: #2112383
-    Ensure Not Unfocused After Boot  template=generic-stonking
+    Ensure Not Unfocused After Boot  template=generic-tenacious
 
 Install OpenSSHServer
     [Documentation]         Install openssh-server to collect logs
@@ -32,19 +32,19 @@ Start Journal Monitor
 
 Language Slide
     [Documentation]         Go through language slide
-    Select Language  template=generic-stonking
+    Select Language  template=generic-tenacious
 
 A11y Slide
     [Documentation]         Go through a11y slide
-    A11y Slide  template=generic-stonking
+    A11y Slide  template=generic-tenacious
 
 Keyboard Layout
     [Documentation]         Use default keyboard layout
-    Keyboard Layout  template=generic-stonking
+    Keyboard Layout  template=generic-tenacious
 
 Internet Connection
     [Documentation]         Go through internet connection slide
-    Internet Connection  template=generic-stonking
+    Internet Connection  template=generic-tenacious
 
 Skip Installer Update
     [Documentation]         Skip installer update, if present
@@ -52,19 +52,19 @@ Skip Installer Update
 
 Try Or Install
     [Documentation]         Go through try or install slide
-    Try Or Install  template=generic-stonking
+    Try Or Install  template=generic-tenacious
 
 Interactive vs Automated
     [Documentation]         Go through interactive vs automated slide
-    Interactive vs Automated  template=generic-stonking
+    Interactive vs Automated  template=generic-tenacious
 
 Default vs Extended
     [Documentation]         Go through default vs extended slide
-    Default vs Extended  template=generic-stonking
+    Default vs Extended  template=generic-tenacious
 
 Proprietary Software
     [Documentation]         Go through proprietary software slide
-    Proprietary Software  template=generic-stonking
+    Proprietary Software  template=generic-tenacious
 
 Select Erase Disk and Reinstall
     [Documentation]         Go through proprietary software slide
@@ -72,7 +72,7 @@ Select Erase Disk and Reinstall
 
 Choose Where to Install Ubuntu
     [Documentation]         Go through slide showing various disks, if present
-    Choose Where to Install Ubuntu  template=generic-stonking
+    Choose Where to Install Ubuntu  template=generic-tenacious
 
 Encryption And File System Tpm Encryption
     [Documentation]         Select tpm encryption from the encryption menu
