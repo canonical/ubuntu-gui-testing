@@ -38,19 +38,19 @@ Start Journal Monitor
 
 Language Slide
     [Documentation]    Go through language slide
-    Select Language    template=generic-stonking
+    Select Language    template=generic-tenacious
 
 A11y Slide
     [Documentation]    Go through a11y slide
-    A11y Slide    template=generic-stonking
+    A11y Slide    template=generic-tenacious
 
 Keyboard Layout
     [Documentation]    Use default keyboard layout
-    Keyboard Layout    template=generic-stonking
+    Keyboard Layout    template=generic-tenacious
 
 Internet Connection
     [Documentation]    Go through internet connection slide
-    Internet Connection    template=generic-stonking
+    Internet Connection    template=generic-tenacious
 
 Skip Installer Update
     [Documentation]    Skip installer update, if present
@@ -58,19 +58,19 @@ Skip Installer Update
 
 Try Or Install
     [Documentation]    Go through try or install slide
-    Try Or Install    template=generic-stonking
+    Try Or Install    template=generic-tenacious
 
 Interactive vs Automated
     [Documentation]    Go through interactive vs automated slide
-    Interactive vs Automated    template=generic-stonking
+    Interactive vs Automated    template=generic-tenacious
 
 Default vs Extended
     [Documentation]    Go through default vs extended slide
-    Default vs Extended    template=generic-stonking
+    Default vs Extended    template=generic-tenacious
 
 Proprietary Software
     [Documentation]    Go through proprietary software slide
-    Proprietary Software    template=generic-stonking
+    Proprietary Software    template=generic-tenacious
 
 Select Erase Disk and Reinstall
     [Documentation]    Select erase disk and reinstall
@@ -78,7 +78,7 @@ Select Erase Disk and Reinstall
 
 Choose Where to Install Ubuntu
     [Documentation]    Go through slide showing various disks, if present
-    Choose Where to Install Ubuntu    template=generic-stonking
+    Choose Where to Install Ubuntu    template=generic-tenacious
 
 Encryption And File System Tpm Encryption
     [Documentation]    Select tpm encryption from the encryption menu
@@ -124,19 +124,19 @@ Start Journal Monitor 2
 
 Language Slide 2
     [Documentation]    Go through language slide
-    Select Language    template=generic-stonking
+    Select Language    template=generic-tenacious
 
 A11y Slide 2
     [Documentation]    Go through a11y slide
-    A11y Slide    template=generic-stonking
+    A11y Slide    template=generic-tenacious
 
 Keyboard Layout 2
     [Documentation]    Use default keyboard layout
-    Keyboard Layout    template=generic-stonking
+    Keyboard Layout    template=generic-tenacious
 
 Internet Connection 2
     [Documentation]    Go through internet connection slide
-    Internet Connection    template=generic-stonking
+    Internet Connection    template=generic-tenacious
 
 Skip Installer Update 2
     [Documentation]    Skip installer update, if present
@@ -144,19 +144,19 @@ Skip Installer Update 2
 
 Try Or Install 2
     [Documentation]    Go through try or install slide
-    Try Or Install    template=generic-stonking
+    Try Or Install    template=generic-tenacious
 
 Interactive vs Automated 2
     [Documentation]    Go through interactive vs automated slide
-    Interactive vs Automated    template=generic-stonking
+    Interactive vs Automated    template=generic-tenacious
 
 Default vs Extended 2
     [Documentation]    Go through default vs extended slide
-    Default vs Extended    template=generic-stonking
+    Default vs Extended    template=generic-tenacious
 
 Proprietary Software 2
     [Documentation]    Go through proprietary software slide
-    Proprietary Software    template=generic-stonking
+    Proprietary Software    template=generic-tenacious
 
 Select Erase Disk and Reinstall 2
     [Documentation]    Select erase disk and reinstall
@@ -164,7 +164,7 @@ Select Erase Disk and Reinstall 2
 
 Choose Where to Install Ubuntu 2
     [Documentation]    Go through slide showing various disks, if present
-    Choose Where to Install Ubuntu    template=generic-stonking
+    Choose Where to Install Ubuntu    template=generic-tenacious
 
 Encryption And File System Tpm Encryption 2
     [Documentation]    Select tpm encryption from the encryption menu
@@ -176,15 +176,15 @@ TPM Action Running In VM Ignore And Continue 2
 
 Create Account
     [Documentation]    Create a user on the installed system
-    Create Account    template=generic-stonking
+    Create Account    template=generic-tenacious
 
 Select Timezone
     [Documentation]    Choose a timezone
-    Select Timezone    template=generic-stonking
+    Select Timezone    template=generic-tenacious
 
 Review Installation
     [Documentation]    Review installation slide
-    Review Installation    template=generic-stonking
+    Review Installation    template=generic-tenacious
 
 Wait For TPM Install To Finish
     [Documentation]    Wait for the installation to finish
@@ -192,7 +192,7 @@ Wait For TPM Install To Finish
 
 Wait For Reboot To Finish
     [Documentation]    Wait for the post-install reboot to finish
-    Wait For Reboot To Finish  template=generic-stonking
+    Wait For Reboot To Finish  template=generic-tenacious
 
 Wait For GIS Popup
     [Documentation]    Wait for the gnome-initial-setup popup

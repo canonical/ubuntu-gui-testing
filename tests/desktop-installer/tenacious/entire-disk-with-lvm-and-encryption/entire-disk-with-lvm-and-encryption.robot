@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation         TPM FDE installation with no pin or passphrase
+Documentation         Perform an LVM+encryption installation
 Resource        kvm.resource
 Test Tags           robot:exit-on-failure    # robocop: off=tag-with-reserved-word
 Resource    ${CURDIR}/../../installer.resource
@@ -12,7 +12,7 @@ Grub Menu
 
 Ensure Not Unfocused After Boot
     [Documentation]         Workaround LP: #2112383
-    Ensure Not Unfocused After Boot  template=generic-stonking
+    Ensure Not Unfocused After Boot  template=generic-tenacious
 
 Install OpenSSHServer
     [Documentation]         Install openssh-server to collect logs
@@ -32,19 +32,19 @@ Start Journal Monitor
 
 Language Slide
     [Documentation]         Go through language slide
-    Select Language  template=generic-stonking
+    Select Language  template=generic-tenacious
 
 A11y Slide
     [Documentation]         Go through a11y slide
-    A11y Slide  template=generic-stonking
+    A11y Slide  template=generic-tenacious
 
 Keyboard Layout
     [Documentation]         Use default keyboard layout
-    Keyboard Layout  template=generic-stonking
+    Keyboard Layout  template=generic-tenacious
 
 Internet Connection
     [Documentation]         Go through internet connection slide
-    Internet Connection  template=generic-stonking
+    Internet Connection  template=generic-tenacious
 
 Skip Installer Update
     [Documentation]         Skip installer update, if present
@@ -52,59 +52,59 @@ Skip Installer Update
 
 Try Or Install
     [Documentation]         Go through try or install slide
-    Try Or Install  template=generic-stonking
+    Try Or Install  template=generic-tenacious
 
 Interactive vs Automated
     [Documentation]         Go through interactive vs automated slide
-    Interactive vs Automated  template=generic-stonking
+    Interactive vs Automated  template=generic-tenacious
 
 Default vs Extended
     [Documentation]         Go through default vs extended slide
-    Default vs Extended  template=generic-stonking
+    Default vs Extended  template=generic-tenacious
 
 Proprietary Software
     [Documentation]         Go through proprietary software slide
-    Proprietary Software  template=generic-stonking
+    Proprietary Software  template=generic-tenacious
 
 Select Erase Disk and Reinstall
-    [Documentation]         Select erase disk and reinstall
+    [Documentation]         Go through proprietary software slide
     Select Erase Disk and Reinstall
 
 Choose Where to Install Ubuntu
     [Documentation]         Go through slide showing various disks, if present
-    Choose Where to Install Ubuntu  template=generic-stonking
+    Choose Where to Install Ubuntu  template=generic-tenacious
 
-Encryption And File System Tpm Encryption
-    [Documentation]         Select tpm encryption from the encryption menu
-    Encryption And File System Tpm Encryption
+Encryption And File System Lvm Encryption
+    [Documentation]         Select lvm and encryption from the encryption menu
+    Encryption And File System Lvm Encryption
 
-TPM Action Running In VM Ignore And Continue
-    [Documentation]     Choose 'Ignore and continue' when secboot complains that the current environment is a VM.
-    TPM Action Running In VM Ignore And Continue
+Disk Passphrase Setup Questing Onwards
+    [Documentation]         Set up a passphrase for encrypted lvm volumes
+    Disk Passphrase Setup Questing Onwards
 
 Create Account
     [Documentation]         Create a user on the installed system
-    Create Account  template=generic-stonking
+    Create Account  template=generic-tenacious
 
 Select Timezone
     [Documentation]         Choose a timezone
-    Select Timezone  template=generic-stonking
+    Select Timezone  template=generic-tenacious
 
 Review Installation
     [Documentation]         Review installation slide
-    Review Installation  template=generic-stonking
+    Review Installation  template=generic-tenacious
 
-Wait For TPM Install To Finish
+Wait For Install To Finish
     [Documentation]         Wait for the installation to finish
-    Wait For TPM Install To Finish
+    Wait For Install To Finish
 
 Stop Journal Monitor
     [Documentation]         Stop monitoring the system journal
     JournalMonitor.Stop
 
-Wait For Reboot To Finish
+Wait For LVM Encrypted Reboot To Finish
     [Documentation]         Wait for the post-install reboot to finish
-    Wait For Reboot To Finish  template=generic-stonking
+    Wait For LVM Encrypted Reboot To Finish
 
 Wait For GIS Popup
     [Documentation]         Wait for the gnome-initial-setup popup
@@ -117,10 +117,6 @@ Install OpenSSHServer In Installed System
 Start sshd VSOCK socket In Installed System
     [Documentation]         Start sshd-vsock.socket
     Start sshd VSOCK socket
-
-Open Firmware Updater
-    [Documentation]         Make sure the firmware-updater snap opens
-    Open Firmware Updater
 
 Start Journal Monitor In Installed System
     [Documentation]         Start monitoring the system journal
