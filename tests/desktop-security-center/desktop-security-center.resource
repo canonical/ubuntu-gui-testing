@@ -26,9 +26,9 @@ Click Security Center Icon
 
 Open Disk Encryption Tab
     [Documentation]    Opens the Disk Encryption Tab in the Security Center
-    Move Pointer To ${Y}/generic/disk-icon.png
+    Move Pointer To Disk encryption
     EzClick
-    Match    ${Y}/generic/disk-icon-selected.png
+    Match Text  Hardware-backed encryption is enabled
 
 Open Camera Snaps Page
     [Documentation]    Opens the camera interface snaps page on the App Permissions page
