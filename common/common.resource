@@ -125,6 +125,12 @@ Log Out
     Keys Combo    Tab
     Keys Combo    Return
 
+Wait For GIS Popup
+    [Documentation]         Wait for gnome-initial-setup
+    Match Text      Welcome to Ubuntu         600
+    BuiltIn.Sleep       10
+
+
 Check File Exists
     [Documentation]    Asserts that the given file exists and optionally deletes it
     [Arguments]    ${path}    ${remove}=False

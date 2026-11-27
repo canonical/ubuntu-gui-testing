@@ -325,11 +325,6 @@ Wait For ZFS Encrypted Reboot To Finish
     Move Pointer To (300, 300)
     EzClick
 
-Wait For GIS Popup
-    [Documentation]         Wait for gnome-initial-setup
-    Match Text      Welcome to Ubuntu         600
-    BuiltIn.Sleep       10
-
 Install OpenSSHServer
     [Documentation]         Install openssh-server
     [Arguments]     ${livesession}=False
