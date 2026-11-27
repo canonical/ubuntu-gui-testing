@@ -4,7 +4,6 @@ import json
 import shutil
 import ssl
 import struct
-import uuid
 from pathlib import Path
 
 import pytest
@@ -12,111 +11,68 @@ import pytest
 from ubuntu_gui_testing_runner.fde_golden import (
     EFI_APPLICATION,
     EFI_BOOT_SERVICE_DRIVER,
-    STATES,
-    SUITE,
-    TEST,
-    SeedPartition,
-    _run,
-    build_efi,
-    load_option,
-    load_option_variables,
-    minimal_efi_image,
+    FIRMWARE_STATES,
+    STAGING_SUITE_DIR,
+    STAGING_TEST_NAME,
+    _run_command,
+    build_minimal_efi_image,
+    build_trusted_efi,
 )
 
-PART = SeedPartition(
-    2, 2048, 2457600, uuid.UUID("0fc63daf-8483-4772-8e79-3d69d8477de4")
-)
 SYSTEM_VIRT_FIRMWARE = Path("/usr/lib/python3/dist-packages/virt/firmware").is_dir()
-
-
-def test_parses_seed_partition() -> None:
-    assert SeedPartition.parse(f"2 2048 2457600 {PART.unique_guid}\n") == PART
-
-
-@pytest.mark.parametrize("text", ["", "2 2048 2457600", "x 2048 2457600 " + "0" * 32])
-def test_rejects_malformed_seed_partition(text: str) -> None:
-    with pytest.raises(ValueError):
-        SeedPartition.parse(text)
+OVMF_VARS_TEMPLATE = Path("/usr/share/OVMF/OVMF_VARS_4M.ms.fd")
 
 
 @pytest.mark.parametrize("subsystem", [EFI_APPLICATION, EFI_BOOT_SERVICE_DRIVER])
 def test_minimal_efi_image_sets_subsystem(subsystem: int) -> None:
-    image = minimal_efi_image(subsystem)
+    image = build_minimal_efi_image(subsystem)
     pe_offset = struct.unpack_from("<I", image, 0x3C)[0]
     assert image[:2] == b"MZ"
     assert image[pe_offset : pe_offset + 4] == b"PE\0\0"
-    # Subsystem sits 68 bytes into the PE32+ optional header.
-    assert struct.unpack_from("<H", image, pe_offset + 24 + 68)[0] == subsystem
+    optional_header_offset = pe_offset + 24
+    assert struct.unpack_from("<H", image, optional_header_offset + 68)[0] == subsystem
 
 
-def test_load_option_points_at_file_on_seed() -> None:
-    option = load_option("UGT Driver", "/EFI/ugt/x.efi", PART)
-    attributes, path_length = struct.unpack_from("<IH", option)
-    description = "UGT Driver\0".encode("utf-16-le")
-    device_path = option[6 + len(description) :]
-
-    assert attributes == 1
-    assert option[6 : 6 + len(description)] == description
-    assert len(device_path) == path_length
-    assert device_path[:4] == bytes((4, 1, 42, 0))
-    assert struct.unpack_from("<IQQ16s", device_path, 4) == (
-        2,
-        2048,
-        2457600,
-        PART.unique_guid.bytes_le,
-    )
-    assert "\\EFI\\ugt\\x.efi\0".encode("utf-16-le") in device_path
-    assert device_path.endswith(bytes((0x7F, 0xFF, 4, 0)))
-
-
-def test_variables_set_option_and_order_for_sysprep() -> None:
-    variables = load_option_variables(STATES["sysprep-app"], PART)["variables"]
-    assert [v["name"] for v in variables] == ["SysPrep0001", "SysPrepOrder"]
-    assert variables[1]["data"] == "0100"
-
-
-def test_suite_contains_the_test() -> None:
-    # YARF copies only --suite to a temporary directory, so the suite must be
-    # the parent that holds common/ and select the test by name.
-    robot = SUITE / TEST.lower() / f"{TEST.lower()}.robot"
-    assert robot.is_file()
-    assert (SUITE / "common/guest-shell.resource").is_file()
+def test_staging_suite_is_self_contained_outside_security_center() -> None:
+    test_dir = STAGING_SUITE_DIR / STAGING_TEST_NAME.lower()
+    security_center_dir = STAGING_SUITE_DIR.parents[2] / "tests/desktop-security-center"
+    assert (test_dir / f"{test_dir.name}.robot").is_file()
+    assert (STAGING_SUITE_DIR / "common/guest-shell.resource").is_file()
+    assert not STAGING_SUITE_DIR.is_relative_to(security_center_dir)
 
 
 @pytest.mark.skipif(
-    not (SYSTEM_VIRT_FIRMWARE and shutil.which("sbsign")),
-    reason="needs python3-virt-firmware and sbsigntool",
+    not (
+        SYSTEM_VIRT_FIRMWARE
+        and OVMF_VARS_TEMPLATE.is_file()
+        and all(
+            shutil.which(tool)
+            for tool in ("openssl", "sbsign", "sbverify", "virt-fw-vars")
+        )
+    ),
+    reason="needs python3-virt-firmware, sbsigntool, OpenSSL and the OVMF template",
 )
-@pytest.mark.parametrize("state", sorted(STATES))
-def test_build_efi_produces_db_entry_the_firmware_accepts(
-    state: str, tmp_path: Path
-) -> None:
-    efi, db_args = build_efi(STATES[state], tmp_path)
-    vars_file = tmp_path / "VARS.fd"
-    shutil.copy("/usr/share/OVMF/OVMF_VARS_4M.ms.fd", vars_file)
-    json_file = tmp_path / "vars.json"
-    json_file.write_text(json.dumps(load_option_variables(STATES[state], PART)))
+@pytest.mark.parametrize("state_name", sorted(FIRMWARE_STATES))
+def test_trust_arguments_add_db_entry_to_nvram(state_name: str, tmp_path: Path) -> None:
+    state = FIRMWARE_STATES[state_name]
+    efi_path, db_trust_args = build_trusted_efi(state, tmp_path)
+    vars_path = tmp_path / "VARS.fd"
+    shutil.copy(OVMF_VARS_TEMPLATE, vars_path)
 
-    _run(
-        [
-            "virt-fw-vars",
-            "--inplace",
-            str(vars_file),
-            *db_args,
-            "--set-json",
-            str(json_file),
-        ]
+    _run_command(["virt-fw-vars", "--inplace", str(vars_path), *db_trust_args])
+    dump_path = tmp_path / "dump.json"
+    _run_command(
+        ["virt-fw-vars", "-i", str(vars_path), "--output-json", str(dump_path)]
     )
-    dump = tmp_path / "dump.json"
-    _run(["virt-fw-vars", "-i", str(vars_file), "--output-json", str(dump)])
-    stored = {v["name"]: v["data"] for v in json.loads(dump.read_text())["variables"]}
+    stored_variables = {
+        variable["name"]: variable["data"]
+        for variable in json.loads(dump_path.read_text())["variables"]
+    }
 
-    option = load_option(STATES[state].description, STATES[state].seed_path, PART)
-    assert stored[f"{STATES[state].variable}0001"] == option.hex()
-    assert stored[f"{STATES[state].variable}Order"] == "0100"
-    if STATES[state].rsa_bits is None:
-        trusted = db_args[2]
+    if state.rsa_bits is None:
+        expected_db_entry = db_trust_args[2]
     else:
-        trusted = ssl.PEM_cert_to_DER_cert(Path(db_args[2]).read_text()).hex()
-    assert trusted in stored["db"]
-    assert efi.is_file()
+        certificate_pem = Path(db_trust_args[2]).read_text()
+        expected_db_entry = ssl.PEM_cert_to_DER_cert(certificate_pem).hex()
+    assert expected_db_entry in stored_variables["db"]
+    assert efi_path.is_file()

@@ -67,6 +67,26 @@ If `--mount-source-domain` is passed without a value, the default device is
 
 Either `--iso` or `--source-domain` must be provided.
 
+### TPM-FDE domains with pre-OS firmware
+
+Clone a stopped TPM-FDE domain and add an EFI program that runs before the OS.
+Use the new domain as `--source-domain` for the pre-OS tests:
+
+```bash
+uv run --project runner python -m ubuntu_gui_testing_runner.fde_golden \
+  --source-domain ugt-desktop-installer-resolute.tpm-fde-no-passphrase-2026-06-01 \
+  --state sysprep-app \
+  --name ugt-fde-sysprep-app
+```
+
+`--state` is `preos-digest-sb`, `preos-weak-sb` or `sysprep-app`.
+
+The host needs `ovmf`, `python3-virt-firmware`, `sbsigntool`, `openssl` and `socat`.
+The source needs a recovery key, SSH and network access. The tool installs `efibootmgr` in the guest.
+
+If a step fails, any clone and the staging logs are kept.
+Logs stay in `--artifacts-dir` (default: `./artifacts`).
+
 ## Development
 
 Requires Python ≥ 3.12 and [uv](https://docs.astral.sh/uv/).
