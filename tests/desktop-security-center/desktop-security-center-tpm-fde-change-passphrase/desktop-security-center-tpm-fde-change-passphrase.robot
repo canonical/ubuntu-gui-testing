@@ -15,6 +15,10 @@ Log In
     [Documentation]    Log into ubuntu user
     Log In
 
+Wait For GIS Popup
+    [Documentation]    Wait until gnome-initial-setup opens
+    Wait For GIS Popup
+
 Open Security Center
     [Documentation]    Open the Security Center from the cli
     Open Security Center

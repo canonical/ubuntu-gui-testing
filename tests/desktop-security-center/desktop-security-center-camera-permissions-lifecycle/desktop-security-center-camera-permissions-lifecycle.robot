@@ -15,6 +15,10 @@ Log In
     [Documentation]    Log into ubuntu user
     Log In
 
+Wait For GIS Popup
+    [Documentation]    Wait until gnome-initial-setup opens
+    Wait For GIS Popup
+
 Setup VM
     [Documentation]    Install the Cheese snap
     Install Snap Package    cheese
