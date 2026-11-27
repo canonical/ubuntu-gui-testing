@@ -31,24 +31,18 @@ Run In Guest
     Should Be Equal As Integers    ${rc}    0    msg=${command} failed: ${stderr}
     RETURN    ${stdout}
 
-Cut Guest Power When File Is Written
-    [Documentation]    Arm a power cut: reset the guest as soon as the file at the
-    ...    path is written (created, replaced or modified), at once and without
-    ...    syncing its disks. A watcher in the guest compares the file's inode
-    ...    and times with those at arming every 20 ms and gives up after 10
-    ...    minutes, so arm it just before the action that writes the file.
-    ...    Returns the boot ID at arming: after reconnecting with Open Guest
-    ...    Shell, check that /proc/sys/kernel/random/boot_id changed, which
-    ...    proves the guest was reset. The domain keeps running, so the VNC
-    ...    display and the CID stay the same.
+Arm Guest Power Cut When File Is Written
+    [Documentation]    Arm a guest reset for when the file is written; return the boot ID from before the reset.
+    ...    The reset skips saving disk data. The guest checks every 20 ms for 10 minutes, so the reset comes a little late.
     [Arguments]    ${path}
-    ${stat}    Set Variable    stat -c "%i %y %z" "$0"
-    ${watcher}    Catenate
-    ...    until [ -f "$0" ] && [ "$(${stat})" != "$1" ]; do sleep 0.02; done;
+    ${quoted_path}    Evaluate    shlex.quote($path)    modules=shlex
+    ${stat_command}    Set Variable    stat -c "%i %y %z" -- "$0" 2>/dev/null
+    ${watcher_script}    Catenate
+    ...    until [ -f "$0" ] && current=$(${stat_command}) && [ "$current" != "$1" ]; do sleep 0.02; done;
     ...    echo b > /proc/sysrq-trigger
-    ${arm}    Catenate
-    ...    s=$(${stat} 2>/dev/null);
+    ${arm_script}    Catenate
+    ...    s=$(${stat_command});
+    ...    cat /proc/sys/kernel/random/boot_id || exit 1;
     ...    setsid timeout 10m sh -c "$1" "$0" "$s" >/dev/null 2>&1 </dev/null &
-    ...    cat /proc/sys/kernel/random/boot_id
-    ${boot_id}    Run In Guest    sh -c '${arm}' '${path}' '${watcher}'
+    ${boot_id}    Run In Guest    sh -c '${arm_script}' ${quoted_path} '${watcher_script}'
     RETURN    ${boot_id}
