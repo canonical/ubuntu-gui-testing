@@ -303,6 +303,64 @@ def test_extracts_recovery_key_from_source_metadata(tmp_path: Path) -> None:
             runner.close()
 
 
+def test_copies_recovery_key_metadata_when_source_has_recovery_key(
+    tmp_path: Path,
+) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+
+    source_xml = SOURCE_DOMAIN_XML_WITH_RECOVERY_KEY.replace(
+        "/pool/source-VARS.fd", str(nvram_source)
+    )
+    conn = _make_conn(source_xml=source_xml)
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with patch("libvirt.open", return_value=conn):
+        runner = LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+            keep=True,
+        )
+        try:
+            conn.defineXML.return_value.setMetadata.assert_called_once_with(
+                libvirt.VIR_DOMAIN_METADATA_ELEMENT,
+                "<ugt><recovery-key>12345-67890-11111-22222-33333-44444-55555-66666</recovery-key></ugt>",
+                "ugt",
+                "https://canonical.com/ubuntu-gui-testing",
+                libvirt.VIR_DOMAIN_AFFECT_CONFIG,
+            )
+        finally:
+            runner.close()
+    conn.defineXML.return_value.undefine.assert_not_called()
+
+
+def test_clone_without_recovery_key_gets_no_metadata(tmp_path: Path) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+    conn = _make_conn(
+        source_xml=SOURCE_DOMAIN_XML.replace("/pool/source-VARS.fd", str(nvram_source))
+    )
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with patch("libvirt.open", return_value=conn):
+        runner = LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+        )
+        try:
+            conn.defineXML.return_value.setMetadata.assert_not_called()
+        finally:
+            runner.close()
+
+
 def test_run_yarf_passes_recovery_key_variable_when_present(tmp_path: Path) -> None:
     nvram_source = tmp_path / "source-VARS.fd"
     nvram_source.write_bytes(b"nvram-data")
@@ -466,6 +524,126 @@ def test_logs_when_recovery_key_metadata_empty(
             assert (
                 "Recovery key metadata in source domain 'source' is empty"
                 in caplog.text
+            )
+        finally:
+            runner.close()
+
+
+def test_raises_and_deletes_kept_clone_when_storing_recovery_key_fails(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+
+    source_xml = SOURCE_DOMAIN_XML_WITH_RECOVERY_KEY.replace(
+        "/pool/source-VARS.fd", str(nvram_source)
+    )
+    conn = _make_conn(source_xml=source_xml)
+    defined_domain = conn.defineXML.return_value
+    defined_domain.setMetadata.side_effect = libvirt.libvirtError(
+        "cannot store metadata"
+    )
+    pool = conn.storagePoolLookupByName.return_value
+    disk_volume = pool.createXML.return_value
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with (
+        patch("libvirt.open", return_value=conn),
+        caplog.at_level("DEBUG"),
+        pytest.raises(
+            RuntimeError, match="Failed to store recovery key as metadata"
+        ) as excinfo,
+    ):
+        LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+            keep=True,
+        )
+
+    defined_domain.setMetadata.assert_called_once()
+    defined_domain.undefine.assert_called_once()
+    disk_volume.delete.assert_called_once()
+    conn.close.assert_called_once()
+    recovery_key = "12345-67890-11111-22222-33333-44444-55555-66666"
+    assert recovery_key not in str(excinfo.value)
+    assert recovery_key not in caplog.text
+
+
+def test_does_not_delete_kept_clone_when_tpm_copy_fails(tmp_path: Path) -> None:
+    swtpm_dir = tmp_path / "swtpm"
+    (swtpm_dir / "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee").mkdir(parents=True)
+    (swtpm_dir / "11111111-2222-3333-4444-555555555555").mkdir()
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+
+    source_xml = SOURCE_DOMAIN_XML_WITH_RECOVERY_KEY.replace(
+        "/pool/source-VARS.fd", str(nvram_source)
+    )
+    conn = _make_conn(source_xml=source_xml)
+    defined_domain = conn.defineXML.return_value
+    disk_volume = conn.storagePoolLookupByName.return_value.createXML.return_value
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with (
+        patch("libvirt.open", return_value=conn),
+        patch(
+            "ubuntu_gui_testing_runner.image_runner.DEFAULT_SWTPM_STATE_DIR",
+            swtpm_dir,
+        ),
+        pytest.raises(FileExistsError),
+    ):
+        LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+            keep=True,
+        )
+
+    defined_domain.setMetadata.assert_called_once()
+    defined_domain.undefine.assert_not_called()
+    disk_volume.delete.assert_not_called()
+
+
+def test_logs_error_when_storing_recovery_key_fails_for_disposable_clone(
+    tmp_path: Path,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    nvram_source = tmp_path / "source-VARS.fd"
+    nvram_source.write_bytes(b"nvram-data")
+
+    source_xml = SOURCE_DOMAIN_XML_WITH_RECOVERY_KEY.replace(
+        "/pool/source-VARS.fd", str(nvram_source)
+    )
+    conn = _make_conn(source_xml=source_xml)
+    defined_domain = conn.defineXML.return_value
+    defined_domain.setMetadata.side_effect = libvirt.libvirtError(
+        "cannot store metadata"
+    )
+
+    pool_dir = tmp_path / "pool"
+    pool_dir.mkdir()
+
+    with patch("libvirt.open", return_value=conn), caplog.at_level("ERROR"):
+        runner = LibvirtImageRunner(
+            source_domain="source",
+            suite_name="test",
+            test_name="basic",
+            pool_dir=pool_dir,
+        )
+        try:
+            defined_domain.setMetadata.assert_called_once()
+            assert "Failed to store recovery key as metadata for domain" in caplog.text
+            assert "12345-67890-11111-22222-33333-44444-55555-66666" not in caplog.text
+            assert (
+                runner.recovery_key == "12345-67890-11111-22222-33333-44444-55555-66666"
             )
         finally:
             runner.close()

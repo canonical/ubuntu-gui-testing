@@ -30,3 +30,19 @@ Run In Guest
     ...    return_stderr=True    return_rc=True    timeout=${timeout}
     Should Be Equal As Integers    ${rc}    0    msg=${command} failed: ${stderr}
     RETURN    ${stdout}
+
+Arm Guest Power Cut When File Is Written
+    [Documentation]    Arm a guest reset for when the file is written; return the boot ID from before the reset.
+    ...    The reset skips saving disk data. The guest checks every 20 ms for 10 minutes, so the reset comes a little late.
+    [Arguments]    ${path}
+    ${quoted_path}    Evaluate    shlex.quote($path)    modules=shlex
+    ${stat_command}    Set Variable    stat -c "%i %y %z" -- "$0" 2>/dev/null
+    ${watcher_script}    Catenate
+    ...    until [ -f "$0" ] && current=$(${stat_command}) && [ "$current" != "$1" ]; do sleep 0.02; done;
+    ...    echo b > /proc/sysrq-trigger
+    ${arm_script}    Catenate
+    ...    s=$(${stat_command});
+    ...    cat /proc/sys/kernel/random/boot_id || exit 1;
+    ...    setsid timeout 10m sh -c "$1" "$0" "$s" >/dev/null 2>&1 </dev/null &
+    ${boot_id}    Run In Guest    sh -c '${arm_script}' ${quoted_path} '${watcher_script}'
+    RETURN    ${boot_id}

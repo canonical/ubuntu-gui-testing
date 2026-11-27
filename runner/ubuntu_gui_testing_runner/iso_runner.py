@@ -7,10 +7,8 @@ from pathlib import Path
 from time import monotonic
 from typing import Any
 from xml.etree.ElementTree import tostring as xml_tostring
-from xml.sax.saxutils import escape
 
 import defusedxml.ElementTree as ET
-import libvirt  # type: ignore[import-untyped]
 
 from ubuntu_gui_testing_runner.base import (
     _BaseLibvirtRunner,
@@ -21,10 +19,7 @@ from ubuntu_gui_testing_runner.constants import (
     DEFAULT_TEST_PASSWORD,
     DEFAULT_TEST_USERNAME,
     DEFAULT_VOLUME_TEMPLATE,
-    DOMAIN_METADATA_NAMESPACE,
-    DOMAIN_METADATA_ROOT,
     RECOVERY_KEY_FILENAME,
-    RECOVERY_KEY_METADATA_KEY,
 )
 from ubuntu_gui_testing_runner.ssh import collect_installer_logs
 
@@ -191,26 +186,7 @@ class LibvirtIsoRunner(_BaseLibvirtRunner):
             LOGGER.warning("Recovery key file '%s' is empty", recovery_key_path)
             return
 
-        metadata_xml = (
-            f"<{DOMAIN_METADATA_ROOT}>"
-            f"<{RECOVERY_KEY_METADATA_KEY}>{escape(recovery_key)}</{RECOVERY_KEY_METADATA_KEY}>"
-            f"</{DOMAIN_METADATA_ROOT}>"
-        )
-        try:
-            self.domain.setMetadata(
-                libvirt.VIR_DOMAIN_METADATA_ELEMENT,
-                metadata_xml,
-                DOMAIN_METADATA_ROOT,
-                DOMAIN_METADATA_NAMESPACE,
-                libvirt.VIR_DOMAIN_AFFECT_CONFIG,
-            )
-        except libvirt.libvirtError:
-            LOGGER.exception(
-                "Failed to store recovery key as metadata for domain '%s'",
-                self.domain_name,
-            )
-            return
-        LOGGER.info("Stored recovery key as metadata for domain '%s'", self.domain_name)
+        self._set_recovery_key_metadata(recovery_key)
 
     async def _handle_reboot(self) -> None:
         """Poll until the transient domain shuts down, then start the persistent one."""
