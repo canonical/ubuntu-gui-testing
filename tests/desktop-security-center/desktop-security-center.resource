@@ -47,7 +47,7 @@ Check Recovery Key Success
     Move Pointer To ${Y}/generic/check-recovery-key-button.png
     EzClick
     Authenticate With Polkit
-    Match    ${Y}/generic/check-recovery-key-success.png
+    Match Text  Recovery key works
 
 Change Passphrase
     [Documentation]    Changes the systems passphrase from the Security Centers Disk Encryption Page
