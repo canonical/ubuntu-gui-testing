@@ -65,6 +65,8 @@ class _BaseLibvirtRunner(Runner):
         self._usb_disk_volume: libvirt.virStorageVol | None = None
         self._domain: libvirt.virDomain | None = None
 
+        self._is_clone_incomplete = False
+
         try:
             self._open_connection()
             self.domain_name = self._generate_domain_name(suite_name, test_name)
@@ -115,7 +117,7 @@ class _BaseLibvirtRunner(Runner):
         if self._pool is not None:
             self._pool.refresh(0)
 
-        if self.keep:
+        if self.keep and not self._is_clone_incomplete:
             if self._domain is not None:
                 self._shutdown_domain()
             LOGGER.info(
@@ -172,8 +174,10 @@ class _BaseLibvirtRunner(Runner):
         self._pool = None
         self._conn = None
 
-    def _set_recovery_key_metadata(self, recovery_key: str) -> None:
-        """Persist the recovery key in the domain's libvirt metadata."""
+    def _set_recovery_key_metadata(
+        self, recovery_key: str, *, must_succeed: bool = False
+    ) -> None:
+        """Save the key; if it must succeed, raise and delete the clone on error."""
         metadata_xml = (
             f"<{DOMAIN_METADATA_ROOT}>"
             f"<{RECOVERY_KEY_METADATA_KEY}>{escape(recovery_key)}</{RECOVERY_KEY_METADATA_KEY}>"
@@ -187,7 +191,13 @@ class _BaseLibvirtRunner(Runner):
                 DOMAIN_METADATA_NAMESPACE,
                 libvirt.VIR_DOMAIN_AFFECT_CONFIG,
             )
-        except libvirt.libvirtError:
+        except libvirt.libvirtError as err:
+            if must_succeed:
+                self._is_clone_incomplete = True
+                raise RuntimeError(
+                    "Failed to store recovery key as metadata for domain "
+                    f"'{self.domain_name}'"
+                ) from err
             LOGGER.exception(
                 "Failed to store recovery key as metadata for domain '%s'",
                 self.domain_name,

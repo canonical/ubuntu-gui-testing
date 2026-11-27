@@ -201,9 +201,9 @@ class LibvirtImageRunner(_BaseLibvirtRunner):
 
         if self._domain is None:
             raise RuntimeError(f"Unable to define domain '{self.domain_name}'")
-        # Keeps a kept clone usable as --source-domain.
+        # A kept clone needs the key to be used as a source.
         if self.recovery_key is not None:
-            self._set_recovery_key_metadata(self.recovery_key)
+            self._set_recovery_key_metadata(self.recovery_key, must_succeed=self.keep)
 
     def _usb_disk_xml(self) -> str:
         if self.mount_source_domain is None:
